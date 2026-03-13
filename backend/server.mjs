@@ -1,22 +1,41 @@
-import cors from 'cors';
-import express from 'express';
+import cors from "cors";
+import express from "express";
+import mysql from "mysql2/promise";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-let messages = [];
-
-app.get('/messages', (req, res) => {
-  res.json(messages);
+const db = await mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "root",
+  database: "wordplay"
 });
 
-app.post('/messages', (req, res) => {
-  messages.push(req.body);
-  res.json({ status: 'success' });
-});
-app.get('/', (req, res) => {
-  res.send('Backend is running');
+console.log("Connected to MySQL");
+
+app.get("/items", async (_req, res) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT id, word FROM word_backup"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(3000, () => console.log("http://localhost:3000"));
+app.get("/litword", async (_req, res) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT id, article FROM article"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(3000, "0.0.0.0", () => {
+  console.log("Server running on port 3000");
+});

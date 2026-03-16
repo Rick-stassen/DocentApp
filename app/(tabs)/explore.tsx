@@ -6,17 +6,19 @@ export default function TabTwoScreen() {
   
   useEffect(() => 
   {
-    fetch("http://192.168.2.10:3000/litword")
+    fetch("http://10.65.68.86:3000/litword")
     .then(res => res.json())
     .then(data => setItems(data))
     .catch(err => console.log(err));
   }, []);
   
+  // console.log(data);
   return (
     <View style={styles.container}>
       <FlatList data={items} keyExtractor={(item:any) => item.id.toString()} renderItem={({item}) => 
       (
-        <Text style={styles.text}>{item.word}</Text>
+        <Text style={styles.text}>{item.article}</Text>
+          
       )
     }/></View>
     );

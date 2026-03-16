@@ -36,6 +36,16 @@ app.get("/litword", async (_req, res) => {
   }
 });
 
+app.get("/WordConnect", async (_req, res) => {
+  try {const [rows] = await db.execute(
+    "SELECT id, article_id, curratedword_id FROM article_curatedword"
+  );
+  res.json(rows);
+} catch (err) {
+  res.status(500).json({ error: err.message })
+}
+})
+
 app.listen(3000, "0.0.0.0", () => {
   console.log("Server running on port 3000");
 });

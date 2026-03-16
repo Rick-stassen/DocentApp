@@ -7,7 +7,7 @@ const [items, setItems] = useState([]);
 
 useEffect(() => 
 {
-  fetch("http://10.65.68.86:3000/items")
+  fetch("http://10.65.68.86:3000/WordConnect")
   .then(res => res.json())
   .then(data => setItems(data))
   .catch(err => console.log(err));
@@ -17,11 +17,12 @@ return (
   <View style={styles.container}>
     <FlatList data={items} keyExtractor={(item:any) => item.id.toString()} renderItem={({item}) => 
     (
-      <Text style={styles.text}>{item.word}</Text>
+      <Text style={styles.text}>{item.article_id & item.curratedword_id}</Text>
     )
   }/></View>
   );
   }
+
 
 const styles = StyleSheet.create({
   container:

@@ -34,7 +34,7 @@ export default function TabLayout() {
         name="aids"
         options={{
           title: '3e tab schremp',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="lock.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
     </Tabs>

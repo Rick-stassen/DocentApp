@@ -6,7 +6,7 @@ export default function HomeScreen() {
 const [items, setItems] = useState([]);
 
 useEffect(() => {
-  fetch("http://192.168.1.56:3000/items")
+  fetch("http://10.65.68.34:3000/items")
   .then(res => res.json())
   .then(data => setItems(data))
   .catch(err => console.log(err));
@@ -14,16 +14,13 @@ useEffect(() => {
 
 return (
 <View style={styles.container}>
-<FlatList
-data={items}
-keyExtractor={(item:any) => item.id.toString()}
-renderItem={({item}) => (
-<View style={styles.card}>
-<Text style={styles.word}>{item.word}</Text>
-<Text style={styles.article}>{item.article?.article}</Text>
-</View>
-)}
-/>
+  <FlatList data={items} keyExtractor={(item:any) => item.id.toString()} renderItem={({item}) => (
+    <View style={styles.card}>
+      <Text style={styles.word}>{item.word}</Text>
+      <Text style={styles.article}>{item.article?.article}</Text>
+    </View>
+  )}
+  />
 </View>
 );
 }

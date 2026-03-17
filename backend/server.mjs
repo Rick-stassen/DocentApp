@@ -14,27 +14,6 @@ const db = await mysql.createConnection({
 
 console.log("Connected to MySQL");
 
-// app.get("/items", async (_req, res) => {
-//   try {
-//     const [rows] = await db.execute(
-//       "SELECT id, word FROM curatedword"
-//     );
-//      rows.forEach(row => {
-//       db.execute
-//     "SELECT article_id FROM article_curatedword WHERE curatedword_id = {row.id}"
-//       res.json(row);
-//        });
-//      const [article] = await if(row.id == 1){
-//         db.execute
-//         "SELECT article FROM article WHERE id = {row.id}"
-//        }
-//        res.json(article);
-//     res.json(rows);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
 app.get("/items", async (_req, res) => {
   try {
     const [rows] = await db.execute(

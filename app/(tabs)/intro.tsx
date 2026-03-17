@@ -1,38 +1,73 @@
-import { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, FlatList, StyleSheet, Text, View } from "react-native";
 import SplashScreen from "../screens/SplashScreen";
 
 export default function HomeScreen() {
 
 const [items, setItems] = useState([]);
-const [loading, setLoading] = useState(true);
+const [loadingData, setLoadingData] = useState(true);
+const [minTimePassed, setMinTimePassed] = useState(false);
+
+const fadeAnim = useRef(new Animated.Value(1)).current;
 
 useEffect(() => {
-  fetch("http://10.65.68.86:3000/items")
+
+  fetch("http://10.65.46.70:3000/items")
     .then(res => res.json())
     .then(data => {
       setItems(data);
-      setLoading(false);
+      setLoadingData(false);
     })
     .catch(err => {
       console.log(err);
-      setLoading(false);
+      setLoadingData(false);
     });
+
+  const timer = setTimeout(() => {
+    setMinTimePassed(true);
+  }, 3000);
+
+  return () => clearTimeout(timer);
+
 }, []);
 
-if(loading){
-  return <SplashScreen/>
-}
+useEffect(() => {
+  if (!loadingData && minTimePassed) {
+
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: true
+    }).start();
+
+  }
+}, [loadingData, minTimePassed]);
 
 return (
-  <View style={styles.container}>
-    <FlatList
-      data={items}
-      keyExtractor={(item:any) => item.id.toString()}
-      renderItem={({item}) => (
-        <Text style={styles.text}>{item.word}</Text>
-      )}
-    />
+  <View style={{flex:1}}>
+
+    {/* Home screen staat er altijd al onder */}
+    <View style={styles.container}>
+      <FlatList
+        data={items}
+        keyExtractor={(item:any) => item.id.toString()}
+        renderItem={({item}) => (
+          <Text style={styles.text}>{item.word}</Text>
+        )}
+      />
+    </View>
+
+    {/* Splash screen fade eroverheen */}
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFill,
+        { opacity: fadeAnim }
+      ]}
+    >
+      <SplashScreen />
+    </Animated.View>
+
   </View>
 );
 }

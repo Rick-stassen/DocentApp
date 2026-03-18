@@ -27,7 +27,7 @@ const gameModes = [
 
 useEffect(() => {
 
-  fetch("http://10.65.46.70:3000/items")
+  fetch("http://10.65.46.48:3000/items")
     .then(res => res.json())
     .then(data => {
       setItems(data);

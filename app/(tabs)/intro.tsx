@@ -26,14 +26,10 @@ export default function HomeScreen() {
     { name: "Time Attack", screen: "TimeAttack" },
     { name: "Multiplayer", screen: "Multiplayer" },
     { name: "Practice", screen: "Practice" },
-        { name: "Classic Mode", screen: "ClassicMode"},
-    { name: "Time Attack", screen: "TimeAttack" },
-    { name: "Multiplayer", screen: "Multiplayer" },
-    { name: "Practice", screen: "Practice" }
   ];
 
   useEffect(() => {
-    fetch("http://10.65.46.70:3000/items")
+    fetch("http://10.65.46.48:3000/items")
       .then(res => res.json())
       .then(data => {
         setItems(data);

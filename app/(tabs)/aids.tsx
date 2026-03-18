@@ -7,7 +7,7 @@ interface ArticleCuratedWord {
   curatedword_id: number;
 }
 
-export default function HomeScreen() {
+export default function aidstab() {
 
   const [items, setItems] = useState<ArticleCuratedWord[]>([]);
 

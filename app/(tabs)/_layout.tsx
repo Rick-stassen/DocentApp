@@ -30,11 +30,19 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="aids"
         options={{
           title: '3e tab schremp',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="SplashScreen"
+        options={{
+          tabBarButton: () => null,
+          tabBarStyle: {display: 'none'},
         }}
       />
     </Tabs>

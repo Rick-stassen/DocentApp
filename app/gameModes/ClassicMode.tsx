@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import SplashScreen from "../screens/SplashScreen";
 
-export default function HomeScreen() {
+export default function ClassicMode() {
 
 const [items, setItems] = useState([]);
 const [loadingData, setLoadingData] = useState(true);
@@ -93,7 +92,6 @@ return (
         { opacity: fadeAnim }
       ]}
     >
-      <SplashScreen />
     </Animated.View>
 
   </View>

@@ -1,18 +1,7 @@
-import { exec } from "child_process";
 import cors from "cors";
 import express from "express";
 import mysql from "mysql2/promise";
 
-export default function handler(req, res) {
-    exec("python get_ip.py", (err, stdout) => {
-        if (err) {
-            res.status(500).json({ error: "failed" });
-            return;
-        }
-
-        res.status(200).json({ ip: stdout.trim() });
-    });
-}
 
 const app = express();
 app.use(cors());

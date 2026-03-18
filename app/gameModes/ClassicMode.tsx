@@ -1,140 +1,149 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function ClassicMode() {
+export default function HomeScreen() {
+  const [items, setItems] = useState([]);
+  const [currentItem, setCurrentItem] = useState<any>(null);
+  const [itemIndex, setItemIndex] = useState(0);
+  var [isVisibleFalse, setIsVisibleFalse] = useState<boolean>(false);
+  var [isVisibleTrue, setIsVisibleTrue] = useState<boolean>(false);
 
-const [items, setItems] = useState([]);
-const [loadingData, setLoadingData] = useState(true);
-const [minTimePassed, setMinTimePassed] = useState(false);
 
-const fadeAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    fetch("http://10.65.68.75:3000/items")
+      .then(res => res.json())
+      .then(data => {
+        setItems(data);
+        setCurrentItem(data[0]);
+      })
+      .catch(err => console.log(err));
+  }, []);
 
-const gameModes = [
-  "Classic Mode",
-  "Time Attack",
-  "Multiplayer",
-  "Practice"
-];
+  const handleClick = (answer: string) => {
+    RecieveAnswer(answer);
+  };
 
-useEffect(() => {
+  function RecieveAnswer(answer: string) {
+    if (!currentItem) return;
 
-  fetch("http://10.65.46.48:3000/items")
-    .then(res => res.json())
-    .then(data => {
-      setItems(data);
-      setLoadingData(false);
-    })
-    .catch(err => {
-      console.log(err);
-      setLoadingData(false);
-    });
+    const isCorrect = currentItem.article.toLowerCase() === answer.toLowerCase();
 
-  const timer = setTimeout(() => {
-    setMinTimePassed(true);
-  }, 3000);
+    if (isCorrect === true) {
+      setIsVisibleTrue(true);
+      console.log("correct antwoordtrue");
+      setTimeout(() => {
+        setIsVisibleTrue(false);
+      }, 500);
+    }
 
-  return () => clearTimeout(timer);
-
-}, []);
-
-useEffect(() => {
-  if (!loadingData && minTimePassed) {
-
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 1000,
-      useNativeDriver: true
-    }).start();
-
+    if (isCorrect !== true) {
+      console.log("fout antwoordfalse");
+      setIsVisibleFalse(true);
+      setTimeout(() => {
+        setIsVisibleFalse(false);
+      }, 500);
+    }
+    setTimeout(() => {
+    const nextIndex = itemIndex + 1;
+    if (nextIndex < items.length) {
+      setItemIndex(nextIndex);
+      setCurrentItem(items[nextIndex]);
+    }
+    },470);
   }
-}, [loadingData, minTimePassed]);
 
-return (
-  <View style={{flex:1}}>
+  return (
+    <View style={styles.container}>
+      {currentItem && (
+        <View style={styles.card}>
+          <Text style={styles.text}>{currentItem.word}</Text>
+        </View>
+      )}
 
-    <LinearGradient
-      colors={["#FD297B", "rgb(221, 11, 204)"]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.container}
-    >
+     {isVisibleTrue && 
+        (
+          <View style={styles.correctBox}><Text style={styles.icon}>✔</Text></View>
+        )
+      }
+      
+      {isVisibleFalse && 
+        (
+          <View style={styles.wrongBox}><Text style={styles.icon}>✖</Text></View>
+        )
+      }
 
-      <View style={styles.gameContainer}>
-
-        <Text style={styles.title}>Game Modes</Text>
-
-        <ScrollView showsVerticalScrollIndicator={false}>
-
-          {gameModes.map((mode, index) => (
-            <TouchableOpacity key={index} style={styles.button}>
-              <Text style={styles.buttonText}>{mode}</Text>
-            </TouchableOpacity>
-          ))}
-
-        </ScrollView>
-
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.btnLinks} onPress={() => handleClick("DE")}>
+          <Text>DE</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btnRight} onPress={() => handleClick("HET")}>
+          <Text>HET</Text>
+        </TouchableOpacity>
       </View>
-
-    </LinearGradient>
-
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        StyleSheet.absoluteFill,
-        { opacity: fadeAnim }
-      ]}
-    >
-    </Animated.View>
-
-  </View>
-);
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  container:{
-    flex:1,
-    justifyContent:"center",
-    alignItems:"center",
+  container: {
+    flex: 1,
+    backgroundColor: "black",
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    alignItems: "center"
   },
-
-  gameContainer:{
-    width:"85%",
-    height:"90%", // container langer gemaakt
-    backgroundColor:"white",
-    borderRadius:20,
-    padding:20,
-    shadowColor:"#000",
-    shadowOpacity:0.2,
-    shadowRadius:10,
-    elevation:5
+  wrongBox: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 100,
+    height: 100,
+    backgroundColor: "red",
+    borderRadius: 10,
+    marginBottom: 20,
   },
-
-  title:{
-    fontSize:24,
-    fontWeight:"bold",
-    marginBottom:20,
-    textAlign:"center"
+  correctBox: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 100,
+    height: 100,
+    backgroundColor: "green",
+    borderRadius: 10,
+    marginBottom: 20,
   },
-
-  button:{
-    backgroundColor:"#FD297B",
-    padding:18,
-    borderRadius:12,
-    marginBottom:14,
-    alignItems:"center"
+  icon: {
+    color: "white",
+    fontSize: 40,
+    fontWeight: "bold",
   },
-
-  buttonText:{
-    color:"white",
-    fontSize:18,
-    fontWeight:"600"
+  card: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: "#111"
+  },
+  text: {
+    color: "white",
+    fontSize: 20,
+    padding: 5
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    position: "absolute",
+    bottom: 20,
+    width: "100%"
+  },
+  btnLinks: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "blue"
+  },
+  btnRight: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "blue"
   }
 });

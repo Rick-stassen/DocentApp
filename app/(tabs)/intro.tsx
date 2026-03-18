@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import SplashScreen from "./SplashScreen";
+import SplashScreen from "../screens/SplashScreen";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
   const gameModes = [
     { name: "Classic Mode", screen: "/gameModes/ClassicMode" },
-    { name: "Time Attack", screen: "/SplashScreen" },
+    { name: "Time Attack", screen: "/time-attack" },
     { name: "Multiplayer", screen: "/Multiplayer" },
     { name: "Practice", screen: "/Practice" },
   ];

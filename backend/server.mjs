@@ -1,6 +1,18 @@
+import { exec } from "child_process";
 import cors from "cors";
 import express from "express";
 import mysql from "mysql2/promise";
+
+export default function handler(req, res) {
+    exec("python get_ip.py", (err, stdout) => {
+        if (err) {
+            res.status(500).json({ error: "failed" });
+            return;
+        }
+
+        res.status(200).json({ ip: stdout.trim() });
+    });
+}
 
 const app = express();
 app.use(cors());
@@ -16,35 +28,13 @@ console.log("Connected to MySQL");
 
 app.get("/items", async (_req, res) => {
   try {
-    const [rows] = await db.execute(
-      "SELECT id, word FROM curatedword"
-    );
+    const [rows] = await db.execute(`
+      SELECT cw.id, cw.word, a.article FROM curatedword cw
+      LEFT JOIN article_curatedword acw ON cw.id = acw.curatedword_id
+      LEFT JOIN article a ON acw.article_id = a.id ORDER BY RAND();
+    `);
 
-    const result = [];
-
-    for (const row of rows) {
-      const [links] = await db.execute(
-        "SELECT article_id FROM article_curatedword WHERE curatedword_id = ?",
-        [row.id]
-      );
-
-      let article = null;
-
-      if (links.length > 0) {
-        const [articleRows] = await db.execute(
-          "SELECT article FROM article WHERE id = ?",
-          [links[0].article_id]
-        );
-        article = articleRows[0];
-      }
-
-      result.push({
-        ...row,
-        article
-      });
-    }
-
-    res.json(result);
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -7,16 +7,7 @@ export default function HomeScreen() {
   const [itemIndex, setItemIndex] = useState(0);
   var [isVisibleFalse, setIsVisibleFalse] = useState<boolean>(false);
   var [isVisibleTrue, setIsVisibleTrue] = useState<boolean>(false);
-  const [ip, setIp] = useState("");
-  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-
-  
-  useEffect(() => {
-    fetch("/api/ip")
-      .then(res => res.json())
-      .then(data => setIp(data.ip));
-  }, []);
 
   useEffect(() => {
     fetch("http://10.65.68.75:3000/items")
@@ -52,11 +43,13 @@ export default function HomeScreen() {
         setIsVisibleFalse(false);
       }, 500);
     }
+    setTimeout(() => {
     const nextIndex = itemIndex + 1;
     if (nextIndex < items.length) {
       setItemIndex(nextIndex);
       setCurrentItem(items[nextIndex]);
     }
+    },470);
   }
 
   return (

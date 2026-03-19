@@ -31,7 +31,7 @@ export default function HomeScreen() {
   ];
 
   useEffect(() => {
-    fetch("http://10.65.46.48:3000/items")
+    fetch("http:// 10.65.42.52:3000/items")
       .then((res) => res.json())
       .then((data) => {
         setItems(data);

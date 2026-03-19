@@ -12,7 +12,7 @@ export default function aidstab() {
   const [items, setItems] = useState<ArticleCuratedWord[]>([]);
 
 useEffect(() => {
-  fetch("http://10.65.68.86:3000/WordConnect")
+  fetch("http:// 10.65.42.52:3000/WordConnect")
     .then(res => res.json())
     .then((data: ArticleCuratedWord[]) => {
       const simplified = data.map((item: ArticleCuratedWord) => ({

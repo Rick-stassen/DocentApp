@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 export default function SplashScreen() {
   return (
@@ -11,6 +11,12 @@ export default function SplashScreen() {
     >
       <View style={styles.box}>
         <Text style={styles.title}>WORDPLAY!</Text>
+
+        <ActivityIndicator
+          size="large"
+          color="#FD297B"
+          style={styles.loader}
+        />
       </View>
     </LinearGradient>
   );
@@ -29,12 +35,18 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     alignItems: "center",
-    paddingTop: 120
+    paddingTop: 120,
+    justifyContent: "space-between",
+    paddingBottom: 40,
   },
 
   title: {
     fontSize: 40,
     fontWeight: "bold",
-    color: "black"
-  }
+    color: "black",
+  },
+
+  loader: {
+    marginBottom: 30,
+  },
 });

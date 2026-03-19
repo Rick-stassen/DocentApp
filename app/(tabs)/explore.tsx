@@ -6,7 +6,7 @@ export default function TabTwoScreen() {
   
   useEffect(() => 
   {
-    fetch("http://10.65.46.48:3000/litword")
+    fetch("http:// 10.65.42.52:3000/litword")
     .then(res => res.json())
     .then(data => setItems(data))
     .catch(err => console.log(err));

@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
 
   useEffect(() => {
-    fetch("http://10.65.68.38:3000/items")
+    fetch("http:// 10.65.42.52:3000/items")
       .then(res => res.json())
       .then(data => {
         const LESSON_SIZE = 10;

@@ -6,21 +6,16 @@ export default function HomeScreen() {
   const LESSON_SIZE = 10;
 
   const [items, setItems] = useState([]);
-
   const [currentItem, setCurrentItem] = useState<any>(null);
-
   const [itemIndex, setItemIndex] = useState(0);
 
-  var [isVisibleFalse, setIsVisibleFalse] = useState<boolean>(false);
-  
-  var [isVisibleTrue, setIsVisibleTrue] = useState<boolean>(false);
-
+  const [isVisibleFalse, setIsVisibleFalse] = useState(false);
+  const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
   useEffect(() => {
-    fetch("http:// 10.65.42.52:3000/items")
+    fetch("http://10.65.46.51:3000/items")
       .then(res => res.json())
       .then(data => {
-        const LESSON_SIZE = 10;
         const limited = data.slice(0, LESSON_SIZE);
 
         setItems(limited);
@@ -30,13 +25,6 @@ export default function HomeScreen() {
       .catch(err => console.log(err));
   }, []);
 
-if (itemIndex >= LESSON_SIZE) {
-  alert("test");
-  setTimeout(() => {
-    router.push('/(tabs)/intro');
-  }, 500);
-}
-
   const handleClick = (answer: string) => {
     RecieveAnswer(answer);
   };
@@ -44,37 +32,32 @@ if (itemIndex >= LESSON_SIZE) {
   function RecieveAnswer(answer: string) {
     if (!currentItem) return;
 
-    const isCorrect = currentItem.article.toLowerCase() === answer.toLowerCase();
+    const isCorrect =
+      currentItem.article.toLowerCase() === answer.toLowerCase();
 
-    if (isCorrect === true) {
+    if (isCorrect) {
       setIsVisibleTrue(true);
-      console.log("correct antwoordtrue");
-      setTimeout(() => {
-        setIsVisibleTrue(false);
-      }, 500);
-    }
-
-    if (isCorrect !== true) {
-      console.log("fout antwoordfalse");
+      setTimeout(() => setIsVisibleTrue(false), 500);
+    } else {
       setIsVisibleFalse(true);
-      setTimeout(() => {
-        setIsVisibleFalse(false);
-      }, 500);
+      setTimeout(() => setIsVisibleFalse(false), 500);
     }
-    setTimeout(() => {
-  const nextIndex = itemIndex + 1;
 
-  if (nextIndex < items.length && nextIndex < LESSON_SIZE) {
-    setItemIndex(nextIndex);
-    setCurrentItem(items[nextIndex]);
-  } else {
-    console.log("lesson complete");
-    setCurrentItem(null);
     setTimeout(() => {
-    router.push('/(tabs)/intro');
-  }, 500);
-  }
-}, 470);
+      const nextIndex = itemIndex + 1;
+
+      if (nextIndex < items.length && nextIndex < LESSON_SIZE) {
+        setItemIndex(nextIndex);
+        setCurrentItem(items[nextIndex]);
+      } else {
+        console.log("lesson complete");
+        setCurrentItem(null);
+
+        setTimeout(() => {
+          router.push('/(tabs)/intro');
+        }, 500);
+      }
+    }, 470);
   }
 
   return (
@@ -85,21 +68,22 @@ if (itemIndex >= LESSON_SIZE) {
         </View>
       )}
 
-     {isVisibleTrue && 
-        (
-          <View style={styles.correctBox}><Text style={styles.icon}>✔</Text></View>
-        )
-      }
-      
-      {isVisibleFalse && 
-        (
-          <View style={styles.wrongBox}><Text style={styles.icon}>✖</Text></View>
-        )
-      }
+      {isVisibleTrue && (
+        <View style={styles.correctBox}>
+          <Text style={styles.icon}>✔</Text>
+        </View>
+      )}
 
-        <Text style={{ color: "white", marginBottom: 10 }}>
-          {itemIndex + 1} / {LESSON_SIZE}
-        </Text>
+      {isVisibleFalse && (
+        <View style={styles.wrongBox}>
+          <Text style={styles.icon}>✖</Text>
+        </View>
+      )}
+
+      <Text style={{ color: "white", marginBottom: 10 }}>
+        {itemIndex + 1} / {LESSON_SIZE}
+      </Text>
+
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.btnLinks} onPress={() => handleClick("DE")}>
           <Text>DE</Text>

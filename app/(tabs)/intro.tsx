@@ -31,7 +31,7 @@ export default function HomeScreen() {
   ];
 
   useEffect(() => {
-    fetch("http:// 10.65.42.52:3000/items")
+    fetch("http:// 10.65.46.51:3000/items")
       .then((res) => res.json())
       .then((data) => {
         setItems(data);
@@ -53,7 +53,7 @@ export default function HomeScreen() {
     if (!loadingData && minTimePassed) {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 1000,
+        duration: 1500,
         useNativeDriver: true,
       }).start();
     }

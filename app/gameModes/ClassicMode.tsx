@@ -1,6 +1,13 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function HomeScreen() {
   const LESSON_SIZE = 10;
@@ -8,6 +15,8 @@ export default function HomeScreen() {
   const [items, setItems] = useState([]);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [itemIndex, setItemIndex] = useState(0);
+
+  const [answers, setAnswers] = useState<(boolean | null)[]>([]);
 
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
@@ -21,19 +30,25 @@ export default function HomeScreen() {
         setItems(limited);
         setCurrentItem(limited[0]);
         setItemIndex(0);
+
+        // 🔥 init answers array
+        setAnswers(new Array(LESSON_SIZE).fill(null));
       })
       .catch(err => console.log(err));
   }, []);
-
-  const handleClick = (answer: string) => {
-    RecieveAnswer(answer);
-  };
 
   function RecieveAnswer(answer: string) {
     if (!currentItem) return;
 
     const isCorrect =
       currentItem.article.toLowerCase() === answer.toLowerCase();
+
+    // 🔥 sla antwoord op
+    setAnswers(prev => {
+      const updated = [...prev];
+      updated[itemIndex] = isCorrect;
+      return updated;
+    });
 
     if (isCorrect) {
       setIsVisibleTrue(true);
@@ -50,9 +65,7 @@ export default function HomeScreen() {
         setItemIndex(nextIndex);
         setCurrentItem(items[nextIndex]);
       } else {
-        console.log("lesson complete");
         setCurrentItem(null);
-
         setTimeout(() => {
           router.push('/(tabs)/intro');
         }, 500);
@@ -60,102 +73,204 @@ export default function HomeScreen() {
     }, 470);
   }
 
+  function AnimatedButton({ title }: { title: string }) {
+    const scale = useRef(new Animated.Value(1)).current;
+
+    const pressIn = () => {
+      Animated.spring(scale, {
+        toValue: 0.85,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    const pressOut = () => {
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    return (
+      <Animated.View style={{ transform: [{ scale }], flex: 1, marginHorizontal: 5 }}>
+        <TouchableOpacity
+          style={styles.button}
+          onPressIn={pressIn}
+          onPressOut={pressOut}
+          onPress={() => RecieveAnswer(title)}
+        >
+          <Text style={styles.buttonText}>{title}</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      {currentItem && (
-        <View style={styles.card}>
-          <Text style={styles.text}>{currentItem.word}</Text>
+    <LinearGradient
+      colors={["#FD297B", "rgb(221, 11, 204)"]}
+      style={styles.container}
+    >
+      {/* Titel */}
+      <Text style={styles.header}>Wordplay</Text>
+
+      <View style={styles.cardContainer}>
+
+        {/* Rechtsboven teller */}
+        <Text style={styles.topRightText}>
+          {itemIndex + 1} / {LESSON_SIZE}
+        </Text>
+
+        {/* NIEUWE SEGMENT PROGRESS BAR */}
+        <View style={styles.progressContainer}>
+          {answers.map((ans, index) => (
+            <View
+              key={index}
+              style={[
+                styles.segment,
+                ans === true && styles.correctSegment,
+                ans === false && styles.wrongSegment,
+              ]}
+            />
+          ))}
         </View>
-      )}
 
-      {isVisibleTrue && (
-        <View style={styles.correctBox}>
-          <Text style={styles.icon}>✔</Text>
+        {/* Woord */}
+        {currentItem && (
+          <View style={styles.wordCard}>
+            <Text style={styles.wordText}>{currentItem.word}</Text>
+          </View>
+        )}
+
+        {/* Feedback */}
+        {isVisibleTrue && (
+          <View style={styles.correctBox}>
+            <Text style={styles.icon}>✔</Text>
+          </View>
+        )}
+
+        {isVisibleFalse && (
+          <View style={styles.wrongBox}>
+            <Text style={styles.icon}>✖</Text>
+          </View>
+        )}
+
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <AnimatedButton title="DE" />
+          <AnimatedButton title="HET" />
         </View>
-      )}
 
-      {isVisibleFalse && (
-        <View style={styles.wrongBox}>
-          <Text style={styles.icon}>✖</Text>
-        </View>
-      )}
-
-      <Text style={{ color: "white", marginBottom: 10 }}>
-        {itemIndex + 1} / {LESSON_SIZE}
-      </Text>
-
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.btnLinks} onPress={() => handleClick("DE")}>
-          <Text>DE</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btnRight} onPress={() => handleClick("HET")}>
-          <Text>HET</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    alignItems: "center",
     paddingTop: 60,
-    paddingHorizontal: 20,
-    alignItems: "center"
   },
-  wrongBox: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 100,
-    height: 100,
-    backgroundColor: "red",
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  correctBox: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 100,
-    height: 100,
-    backgroundColor: "green",
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  icon: {
+
+  header: {
     color: "white",
-    fontSize: 40,
+    fontSize: 26,
     fontWeight: "bold",
+    marginBottom: 10,
   },
-  card: {
+
+  cardContainer: {
+    width: "85%",
+    height: "80%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "space-between",
+    position: "relative",
+  },
+
+  topRightText: {
+    position: "absolute",
+    top: 15,
+    right: 20,
+    fontSize: 14,
+    color: "#333",
+  },
+
+  // 🔥 segmented progress bar
+  progressContainer: {
+    flexDirection: "row",
+    width: "100%",
+    height: 10,
+    marginTop: 30,
+  },
+
+  segment: {
+    flex: 1,
+    marginHorizontal: 2,
+    backgroundColor: "#eee",
+    borderRadius: 5,
+  },
+
+  correctSegment: {
+    backgroundColor: "#29fd3e",
+  },
+
+  wrongSegment: {
+    backgroundColor: "red",
+  },
+
+  wordCard: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
-    padding: 10,
-    backgroundColor: "#111"
   },
-  text: {
-    color: "white",
-    fontSize: 20,
-    padding: 5
+
+  wordText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
   },
+
   buttonsContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    width: "100%",
+  },
+
+  button: {
+    backgroundColor: "#FD297B",
+    padding: 18,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  correctBox: {
     position: "absolute",
-    bottom: 20,
-    width: "100%"
+    top: "40%",
+    backgroundColor: "green",
+    padding: 20,
+    borderRadius: 10,
   },
-  btnLinks: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 15,
-    backgroundColor: "blue"
+
+  wrongBox: {
+    position: "absolute",
+    top: "40%",
+    backgroundColor: "red",
+    padding: 20,
+    borderRadius: 10,
   },
-  btnRight: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 15,
-    backgroundColor: "blue"
-  }
+
+  icon: {
+    color: "white",
+    fontSize: 30,
+    fontWeight: "bold",
+  },
 });

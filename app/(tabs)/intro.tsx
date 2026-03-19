@@ -44,7 +44,7 @@ export default function HomeScreen() {
 
     const timer = setTimeout(() => {
       setMinTimePassed(true);
-    }, 1200);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);

@@ -1,23 +1,41 @@
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
+  const LESSON_SIZE = 10;
+
   const [items, setItems] = useState([]);
+
   const [currentItem, setCurrentItem] = useState<any>(null);
+
   const [itemIndex, setItemIndex] = useState(0);
+
   var [isVisibleFalse, setIsVisibleFalse] = useState<boolean>(false);
+  
   var [isVisibleTrue, setIsVisibleTrue] = useState<boolean>(false);
 
 
   useEffect(() => {
-    fetch("http://10.65.68.75:3000/items")
+    fetch("http://10.65.68.38:3000/items")
       .then(res => res.json())
       .then(data => {
-        setItems(data);
-        setCurrentItem(data[0]);
+        const LESSON_SIZE = 10;
+        const limited = data.slice(0, LESSON_SIZE);
+
+        setItems(limited);
+        setCurrentItem(limited[0]);
+        setItemIndex(0);
       })
       .catch(err => console.log(err));
   }, []);
+
+if (itemIndex >= LESSON_SIZE) 
+{
+  setTimeout(() => {
+    router.push('/intro');
+  }, 500);
+}
 
   const handleClick = (answer: string) => {
     RecieveAnswer(answer);
@@ -44,12 +62,16 @@ export default function HomeScreen() {
       }, 500);
     }
     setTimeout(() => {
-    const nextIndex = itemIndex + 1;
-    if (nextIndex < items.length) {
-      setItemIndex(nextIndex);
-      setCurrentItem(items[nextIndex]);
-    }
-    },470);
+  const nextIndex = itemIndex + 1;
+
+  if (nextIndex < items.length && nextIndex < LESSON_SIZE) {
+    setItemIndex(nextIndex);
+    setCurrentItem(items[nextIndex]);
+  } else {
+    console.log("lesson complete");
+    setCurrentItem(null);
+  }
+}, 470);
   }
 
   return (
@@ -72,6 +94,9 @@ export default function HomeScreen() {
         )
       }
 
+        <Text style={{ color: "white", marginBottom: 10 }}>
+          {itemIndex + 1} / {LESSON_SIZE}
+        </Text>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.btnLinks} onPress={() => handleClick("DE")}>
           <Text>DE</Text>

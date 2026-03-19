@@ -31,8 +31,9 @@ export default function HomeScreen() {
   }, []);
 
 if (itemIndex >= LESSON_SIZE) {
+  alert("test");
   setTimeout(() => {
-    router.push('/intro');
+    router.push('/(tabs)/intro');
   }, 500);
 }
 
@@ -69,6 +70,9 @@ if (itemIndex >= LESSON_SIZE) {
   } else {
     console.log("lesson complete");
     setCurrentItem(null);
+    setTimeout(() => {
+    router.push('/(tabs)/intro');
+  }, 500);
   }
 }, 470);
   }

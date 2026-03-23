@@ -12,7 +12,7 @@ import {
 export default function HomeScreen() {
   const LESSON_SIZE = 10;
 
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<any[]>([]);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [itemIndex, setItemIndex] = useState(0);
 
@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
   useEffect(() => {
-    fetch("http://10.65.46.51:3000/items")
+    fetch("http://10.65.68.44:3000/items")
       .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);
@@ -30,8 +30,6 @@ export default function HomeScreen() {
         setItems(limited);
         setCurrentItem(limited[0]);
         setItemIndex(0);
-
-        // 🔥 init answers array
         setAnswers(new Array(LESSON_SIZE).fill(null));
       })
       .catch(err => console.log(err));
@@ -43,13 +41,28 @@ export default function HomeScreen() {
     const isCorrect =
       currentItem.article.toLowerCase() === answer.toLowerCase();
 
-    // 🔥 sla antwoord op
+    //SEND TO DATABASE
+    fetch("http://10.65.68.44:3000/learned", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        word: currentItem.word,
+        id: currentItem.id,
+        correct: isCorrect,
+        litwoord: currentItem.article,
+      }),
+    }).catch(err => console.log(err));
+
+    // store result locally
     setAnswers(prev => {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
 
+    // feedback UI
     if (isCorrect) {
       setIsVisibleTrue(true);
       setTimeout(() => setIsVisibleTrue(false), 500);
@@ -58,6 +71,7 @@ export default function HomeScreen() {
       setTimeout(() => setIsVisibleFalse(false), 500);
     }
 
+    // next item
     setTimeout(() => {
       const nextIndex = itemIndex + 1;
 
@@ -111,17 +125,14 @@ export default function HomeScreen() {
       colors={["#FD297B", "rgb(221, 11, 204)"]}
       style={styles.container}
     >
-      {/* Titel */}
       <Text style={styles.header}>Wordplay</Text>
 
       <View style={styles.cardContainer}>
 
-        {/* Rechtsboven teller */}
         <Text style={styles.topRightText}>
           {itemIndex + 1} / {LESSON_SIZE}
         </Text>
 
-        {/* NIEUWE SEGMENT PROGRESS BAR */}
         <View style={styles.progressContainer}>
           {answers.map((ans, index) => (
             <View
@@ -135,14 +146,12 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Woord */}
         {currentItem && (
           <View style={styles.wordCard}>
             <Text style={styles.wordText}>{currentItem.word}</Text>
           </View>
         )}
 
-        {/* Feedback */}
         {isVisibleTrue && (
           <View style={styles.correctBox}>
             <Text style={styles.icon}>✔</Text>
@@ -155,7 +164,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Buttons */}
         <View style={styles.buttonsContainer}>
           <AnimatedButton title="DE" />
           <AnimatedButton title="HET" />
@@ -199,7 +207,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
-  // 🔥 segmented progress bar
   progressContainer: {
     flexDirection: "row",
     width: "100%",

@@ -3,8 +3,10 @@ import express from "express";
 import mysql from "mysql2/promise";
 
 
+
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const db = await mysql.createConnection({
   host: "localhost",
@@ -49,6 +51,39 @@ app.get("/WordConnect", async (_req, res) => {
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/learned', (req, res) => {
+  const { id, word, correct,litwoord } = req.body;
+
+  const sql = `
+    INSERT INTO learned_word (id, word, correct, litwoord)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  db.query(sql, [id, word, correct, litwoord], (err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: 'DB error' });
+    }
+
+    res.json({ success: true });
+  });
+});
+
+app.get('/stats', async (req, res) => {
+  try {
+    const sql = 
+    `SELECT COUNT(*) as total, SUM(correct = true) as correct FROM learned_word`
+
+    const [rows] = await db.query(sql);
+
+    res.json(rows[0]);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'DB error' });
   }
 });
 

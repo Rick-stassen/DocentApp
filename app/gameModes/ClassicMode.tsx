@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
   useEffect(() => {
-    fetch("http://10.65.68.44:3000/items")
+    fetch("http://10.65.68.50:3000/items")
       .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);
@@ -42,26 +42,25 @@ export default function HomeScreen() {
       currentItem.article.toLowerCase() === answer.toLowerCase();
 
     //SEND TO DATABASE
-    fetch("http://10.65.68.44:3000/learned", {
+    fetch("http://10.65.68.50:3000/learned_word", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        id  : currentItem.id,
         word: currentItem.word,
-        id: currentItem.id,
         correct: isCorrect,
         litwoord: currentItem.article,
       }),
     }).catch(err => console.log(err));
-
     // store result locally
     setAnswers(prev => {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
-
+    
     // feedback UI
     if (isCorrect) {
       setIsVisibleTrue(true);

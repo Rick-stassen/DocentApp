@@ -1,38 +1,103 @@
-import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 export default function Profile() {
-  const [sum, setSum] = useState(0);
+  const [items, setItems] = useState<any[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      const interval = setInterval(() => {
-        setSum((prev) => prev + 1);
-      }, 2000);
+  type WordItem = {
+    id: number;
+    word: string;
+    correct: number;
+    litwoord: string;
+  };
 
-      return () => clearInterval(interval);
-    }, [])
-  );
+  useEffect(() => {
+    fetch("http://10.65.68.23:3000/profile")
+      .then(res => res.json())
+      .then((data: WordItem[]) => {
+        setItems(data.slice(0, 29129));
+      })
+      .catch(err => console.log(err));
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Sum: {sum}</Text>
-    </View>
+    <LinearGradient
+      colors={["#FD297B", "rgb(221, 11, 204)"]}
+      style={styles.container}
+    >
+      <Text style={styles.header}>Profile</Text>
+
+      <View style={styles.cardContainer}>
+        <Text style={styles.title}>Learned Words</Text>
+
+        <ScrollView style={styles.list}>
+          {items.map((item, index) => (
+            <View key={index} style={styles.wordRow}>
+              <Text style={styles.article}>{item.litwoord}</Text>
+              <Text style={styles.word}>{item.word}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    paddingTop: 60,
   },
-  text: {
-    position: "absolute",
-    top: "50%",
-    right: "50%",
-    fontSize: 24,
+
+  header: {
+    color: "white",
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  cardContainer: {
+    width: "85%",
+    height: "80%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
+  },
+
+  list: {
+    marginTop: 10,
+  },
+
+  wordRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+  article: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FD297B",
+  },
+
+  word: {
+    fontSize: 16,
     color: "#333",
   },
 });

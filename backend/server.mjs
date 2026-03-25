@@ -2,9 +2,16 @@ import cors from "cors";
 import express from "express";
 import mysql from "mysql2/promise";
 
+import { Get_profile_info } from "./routes/get_profile_info.mjs";
+import { Get_item_words } from "./routes/get_words.mjs";
+import { Push_learned_words } from "./routes/push_learned_words.mjs";
+import { register_user } from "./routes/register.mjs";
+
+
 
 const app = express();
 app.use(cors());
+app.use(express.json())
 
 const db = await mysql.createConnection({
   host: "localhost",
@@ -15,40 +22,58 @@ const db = await mysql.createConnection({
 
 console.log("Connected to MySQL");
 
-app.get("/items", async (_req, res) => {
-  try {
-    const [rows] = await db.execute(`
-      SELECT cw.id, cw.word, a.article FROM curatedword cw
-      LEFT JOIN article_curatedword acw ON cw.id = acw.curatedword_id
-      LEFT JOIN article a ON acw.article_id = a.id ORDER BY RAND();
-    `);
-
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.get("/items", async (_req, res) => 
+  {
+    try 
+    {
+      res.json(await Get_item_words(_req, res, db));
+    } 
+    catch (err) 
+    {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
-app.get("/litword", async (_req, res) => {
-  try {
-    const [rows] = await db.execute(
-      "SELECT id, article FROM article"
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.post("/learned_word", async (_req, res) => 
+  {
+    try 
+    {
+      await Push_learned_words(_req, res, db);
+
+    } 
+    catch (err) 
+    {
+      console.log(err);
+      res.status(500).json({ error: 'DB error' });
+    }
   }
-});
+);
 
-app.get("/WordConnect", async (_req, res) => {
-  try {
-    const [rows] = await db.execute(
-      "SELECT * FROM article_curatedword "
-    );
-    console.log("WordConnect rows:", rows);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.post("/register", async (_req, res) => 
+  {
+    try
+    {
+      res.json(await register_user(_req, res, db));
+      
+    } 
+    catch (err) 
+    {
+      console.log(err);
+      res.status(500).json({ error: 'DB error' });
+    }
+  }
+);
+
+
+app.get("/profile", async (_req, res) => {
+  try
+  {
+    res.json(await Get_profile_info(_req, res, db));
+  } 
+  catch(err) 
+  {
+    res.status(500).json({ error: err.message});
   }
 });
 

@@ -4,6 +4,7 @@ import mysql from "mysql2/promise";
 
 import { Get_profile_info } from "./routes/get_profile_info.mjs";
 import { Get_item_words } from "./routes/get_words.mjs";
+import { login_user } from "./routes/login.mjs";
 import { Push_learned_words } from "./routes/push_learned_words.mjs";
 import { register_user } from "./routes/register.mjs";
 
@@ -64,6 +65,18 @@ app.post("/register", async (_req, res) =>
     }
   }
 );
+
+app.post("/login", async (_req, res) => {
+  try 
+  {
+    await login_user(_req, res, db);
+  } 
+  catch (err) 
+  {
+    console.log(err);
+    return res.status(500).json({ error: "DB error" });
+  }
+});
 
 
 app.get("/profile", async (_req, res) => {

@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
-export default function LoginScreen() {
+export default function LoginScreen( ) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      setError('Email and password are required');
-      return;
-    }
 
-    if (email === 'test@example.com' && password === '1234') {
-      setError('');
-      alert('Login successful');
-    } else {
-      setError('Invalid credentials');
+  const login = async () => {
+    try {
+      const response = await fetch("http://10.65.68.23:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      console.log('Status:', response.status);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed');
+        return;
+      } else {
+        setError('');
+        console.log('Login successful');
+      }
+
+      console.log('Response data:', data.error);
+
+    } catch (err) {
+      console.log('Fetch error:', err);
+      setError('An error occurred');
     }
   };
 
@@ -38,7 +52,7 @@ export default function LoginScreen() {
         secureTextEntry
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={login}  />
     </View>
   );
 }

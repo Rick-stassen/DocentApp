@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { UserProvider } from './backend/routes/UserContext';
+import MainNavigator from "/";
 
 export default function LoginScreen( ) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const App = () => (
+    <UserProvider>
+      <MainNavigator />
+    </UserProvider>
+  );
+
+
 
   const login = async () => {
     try {
-      const response = await fetch("http://10.65.68.23:3000/login", {
+      const response = await fetch("http://10.65.68.47:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })

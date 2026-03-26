@@ -1,45 +1,34 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { UserProvider } from './backend/routes/UserContext';
-import MainNavigator from "/";
+import { UserContext } from 'D:/Leer Jaar 2/Code/klant opdracht/DocentApp/backend/UserContext.mjs';
+import { storeSession } from 'D:/Leer Jaar 2/Code/klant opdracht/DocentApp/backend/stotage.mjs';
 
-export default function LoginScreen( ) {
+
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  const App = () => (
-    <UserProvider>
-      <MainNavigator />
-    </UserProvider>
-  );
-
-
+  const { setUserToken } = useContext(UserContext);
 
   const login = async () => {
     try {
-      const response = await fetch("http://10.65.68.47:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('http://10.65.68.47:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      console.log('Status:', response.status);
       const data = await response.json();
 
       if (!response.ok) {
         setError(data.error || 'Login failed');
         return;
-      } else {
-        setError('');
-        console.log('Login successful');
       }
 
-      console.log('Response data:', data.error);
-
-    } catch (err) {
-      console.log('Fetch error:', err);
-      setError('An error occurred');
+      await storeSession(data.token);
+      setUserToken(data.token);
+    } catch {
+      setError('Server unreachable');
     }
   };
 
@@ -50,7 +39,6 @@ export default function LoginScreen( ) {
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
@@ -61,7 +49,7 @@ export default function LoginScreen( ) {
         secureTextEntry
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title="Login" onPress={login}  />
+      <Button title="Login" onPress={login} />
     </View>
   );
 }

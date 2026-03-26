@@ -1,19 +1,36 @@
-export async function login_user(req, res, db) {
+export async function login_user(req, res, db) 
+{
     const { email, password } = req.body;
 
-    const [rows] = await db.execute(
-        "SELECT id, password FROM users WHERE email = ? AND password = ?",
-        [email, password]
-    );
+    try 
+    {
+        const [rows] = await db.execute
+        (
+            "SELECT id, password FROM users WHERE email = ? AND password = ?",
+            [email, password]
+        );
 
-    if (rows.length === 0) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        if (rows.length === 0) 
+        {
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        const user = rows[0];
+        const token = String(user.id);
+
+        return res.status(200).json
+        (
+            {
+                message: "Login successful",
+                userId: user.id,
+                token: token
+            }
+        );
+
+    } 
+    catch (err) 
+    {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
     }
-
-    const user = rows[0];
-
-    return res.status(200).json({
-        message: "Login successful",
-        userId: user.id
-    });
 }

@@ -24,7 +24,7 @@ export default function HomeScreen() {
   useEffect(() => {
 
     fetch("http://localhost:3000/items")
-      .then(res => res.json())  
+      .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);
 

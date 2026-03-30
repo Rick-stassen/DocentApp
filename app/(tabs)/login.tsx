@@ -113,7 +113,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await fetch("http://10.65.46.50:3000/login", {
+      const response = await fetch("http://localhost:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -128,6 +128,7 @@ export default function LoginScreen() {
 
       await storeSession(data.token);
       setUserToken(data.token);
+      animateOut(() => router.push("/(tabs)/intro"));
     } catch (err) {
       console.log(err);
       showErrorPopup("Server unreachable");

@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
   useEffect(() => {
+
     fetch("http://localhost:3000/items")
       .then(res => res.json())
       .then(data => {

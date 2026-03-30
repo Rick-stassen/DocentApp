@@ -18,15 +18,18 @@ import { storeSession } from "../../backend/stotage.mjs";
 
 // 🔹 Icons
 const MailIcon = () => (
-  <Svg width={24} height={24} viewBox="0 0 960 960" fill="none" style={{ marginRight: 5 }}>
-    <Path d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Zm320-280L160 360v400h640V360L480 520Zm0-80 320-200H160l320 200Z" fill="#55555575" />
+  <Svg width={24} height={24} viewBox="0 0 960 960" style={{ marginRight: 5 }}>
+    <Path
+      d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Z"
+      fill="#55555575"
+    />
   </Svg>
 );
 
 const LockIcon = () => (
   <Svg width={24} height={24} viewBox="0 0 960 960" style={{ marginRight: 5 }}>
     <Path
-      d="M240 400v-80q0-100 70-170t170-70q100 0 170 70t70 170v80h40q33 0 56.5 23.5T840 480v240q0 33-23.5 56.5T760 800H200q-33 0-56.5-23.5T120 720V480q0-33 23.5-56.5T200 400h40Zm80 0h320v-80q0-66-47-113t-113-47q-66 0-113 47t-47 113v80Z"
+      d="M240 400v-80q0-100 70-170t170-70q100 0 170 70t70 170v80h40q33 0 56.5 23.5T840 480v240q0 33-23.5 56.5T760 800H200Z"
       fill="#55555575"
     />
   </Svg>
@@ -271,7 +274,12 @@ card: {
     textAlign: "center",
   },
 
-  titleregistreer: { marginBottom: 20, fontSize: 24, fontWeight: "bold", textAlign: "center", color: "#FD297B" },
+  titleregistreer: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#FD297B",
+  },
 
   inputContainer: {
     flexDirection: "row",

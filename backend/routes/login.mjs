@@ -1,7 +1,6 @@
-export async function login_user(req, res, db) 
+export async function login_user(_req, res, db) 
 {
-    const { email, password } = req.body;
-
+    const { email, password } = _req.body;
     try 
     {
         const [rows] = await db.execute

@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
   useEffect(() => {
-    fetch("http://10.65.68.47:3000/items")
+    fetch("http://localhost:3000/items")
       .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);

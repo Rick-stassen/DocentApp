@@ -2,7 +2,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +13,8 @@ import {
 
 export default function HomeScreen() {
   const LESSON_SIZE = 10;
+  const BASE_URL = "http://localhost:3000"; // ✅ FIX
+  const API_KEY = "mjVrreKbq2KmuCNe86cRvHiZDctdypjO6BWahX1fzQMLjwVCyNgrn1sD"; // 🔥 voeg je key toe
 
   const [items, setItems] = useState<any[]>([]);
   const [currentItem, setCurrentItem] = useState<any>(null);
@@ -18,12 +22,58 @@ export default function HomeScreen() {
 
   const [answers, setAnswers] = useState<(boolean | null)[]>([]);
 
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loadingImage, setLoadingImage] = useState(false);
+
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
-  useEffect(() => {
+  // 🔥 NL → EN mapping (optioneel uitbreiden)
+  const translateWord = (word: string) => {
+    const map: any = {
+      appel: "apple",
+      hond: "dog",
+      huis: "house",
+      kat: "cat",
+      auto: "car",
+    };
+    return map[word.toLowerCase()] || word;
+  };
 
-    fetch("http://localhost:3000/items")
+  // 🔥 IMAGE VAN PEXELS HALEN
+  const fetchImage = async (word: string) => {
+    try {
+      setLoadingImage(true);
+
+      const translated = translateWord(word);
+
+      const res = await fetch(
+  `https://api.pexels.com/v1/search?query=${translated}&locale=nl-NL&per_page=1`,
+        {
+          headers: {
+            Authorization: API_KEY,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.photos && data.photos.length > 0) {
+        setImageUrl(data.photos[0].src.medium);
+      } else {
+        setImageUrl(null);
+      }
+
+    } catch (err) {
+      console.log("Image error:", err);
+    } finally {
+      setLoadingImage(false);
+    }
+  };
+
+  // 🔥 ITEMS LADEN
+  useEffect(() => {
+    fetch(`${BASE_URL}/items`)
       .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);
@@ -32,37 +82,48 @@ export default function HomeScreen() {
         setCurrentItem(limited[0]);
         setItemIndex(0);
         setAnswers(new Array(LESSON_SIZE).fill(null));
+
+        fetchImage(limited[0].word);
       })
-      .catch(err => console.log(err));
+      .catch(err => console.log("Items error:", err));
   }, []);
 
-  function RecieveAnswer(answer: string) {
+  // 🔥 NIEUW WOORD → NIEUWE IMAGE
+  useEffect(() => {
+    if (currentItem) {
+      fetchImage(currentItem.word);
+    }
+  }, [currentItem]);
+
+  async function RecieveAnswer(answer: string) {
     if (!currentItem) return;
 
     const isCorrect =
       currentItem.article.toLowerCase() === answer.toLowerCase();
 
-    //SEND TO DATABASE
-    fetch("http://10.65.68.50:3000/learned_word", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        word: currentItem.word,
-        correct: isCorrect,
-        litwoord: currentItem.article,
-      }),
-    }).catch(err => console.log(err));
+    // ✅ FIX: try/catch (geen crash meer)
+    try {
+      await fetch(`${BASE_URL}/learned_word`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          word: currentItem.word,
+          correct: isCorrect,
+          litwoord: currentItem.article,
+        }),
+      });
+    } catch (err) {
+      console.log("Backend niet bereikbaar");
+    }
 
-    // store result locally
     setAnswers(prev => {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
 
-    // feedback UI
     if (isCorrect) {
       setIsVisibleTrue(true);
       setTimeout(() => setIsVisibleTrue(false), 500);
@@ -71,7 +132,6 @@ export default function HomeScreen() {
       setTimeout(() => setIsVisibleFalse(false), 500);
     }
 
-    // next item
     setTimeout(() => {
       const nextIndex = itemIndex + 1;
 
@@ -90,28 +150,16 @@ export default function HomeScreen() {
   function AnimatedButton({ title }: { title: string }) {
     const scale = useRef(new Animated.Value(1)).current;
 
-    const pressIn = () => {
-      Animated.spring(scale, {
-        toValue: 0.85,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    const pressOut = () => {
-      Animated.spring(scale, {
-        toValue: 1,
-        friction: 3,
-        tension: 40,
-        useNativeDriver: true,
-      }).start();
-    };
-
     return (
       <Animated.View style={{ transform: [{ scale }], flex: 1, marginHorizontal: 5 }}>
         <TouchableOpacity
           style={styles.button}
-          onPressIn={pressIn}
-          onPressOut={pressOut}
+          onPressIn={() =>
+            Animated.spring(scale, { toValue: 0.85, useNativeDriver: true }).start()
+          }
+          onPressOut={() =>
+            Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()
+          }
           onPress={() => RecieveAnswer(title)}
         >
           <Text style={styles.buttonText}>{title}</Text>
@@ -139,8 +187,8 @@ export default function HomeScreen() {
               key={index}
               style={[
                 styles.segment,
-                ans === true && styles.correctSegment,
-                ans === false && styles.wrongSegment,
+                ans === true ? styles.correctSegment :
+                ans === false ? styles.wrongSegment : null
               ]}
             />
           ))}
@@ -148,7 +196,19 @@ export default function HomeScreen() {
 
         {currentItem && (
           <View style={styles.wordCard}>
-            <Text style={styles.wordText}>{currentItem.word}</Text>
+
+            {loadingImage ? (
+              <ActivityIndicator size="large" />
+            ) : imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.image} />
+            ) : (
+              <Text>Geen afbeelding</Text>
+            )}
+
+            <Text style={styles.wordText}>
+              {currentItem.word}
+            </Text>
+
           </View>
         )}
 
@@ -239,6 +299,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
+  },
+
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 20,
   },
 
   buttonsContainer: {

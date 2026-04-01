@@ -55,7 +55,7 @@ app.post("/register", async (_req, res) =>
   {
     try
     {
-      res.json(await register_user(_req, res, db));
+      res(await register_user(_req, res, db));
       
     } 
     catch (err) 

@@ -8,6 +8,7 @@ import {
   Dimensions, Platform, StyleSheet,
   Text,
   TextInput,
+  TextStyle,
   TouchableOpacity,
   View
 } from "react-native";
@@ -131,11 +132,16 @@ export default function RegisterScreen() {
 
       const data = await response.json();
 
-      if (data.usernameExists) {
+      if (data.usernameExists) 
+        {
         showErrorPopup("Username is already in use");
-      } else if (data.emailExists) {
+      }
+      else if (data.emailExists) 
+      {
         showErrorPopup("Email is already in use");
-      } else {
+      }
+      else 
+      {
         animateOut(() => router.push("../login"));
       }
     } catch {
@@ -197,7 +203,7 @@ export default function RegisterScreen() {
           ]}>
             <MailIcon />
             <TextInput
-              style={styles.textInputWithIcon}
+              style={styles.textInputWithIcon as TextStyle}
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
@@ -215,7 +221,7 @@ export default function RegisterScreen() {
           ]}>
             <UserIcon />
             <TextInput
-              style={styles.textInputWithIcon}
+              style={styles.textInputWithIcon as TextStyle}
               placeholder="Username"
               value={username}
               onChangeText={setUsername}
@@ -233,7 +239,7 @@ export default function RegisterScreen() {
           ]}>
             <LockIcon />
             <TextInput
-              style={styles.textInputWithIcon}
+              style={styles.textInputWithIcon as TextStyle}
               placeholder="Password"
               secureTextEntry
               value={password}

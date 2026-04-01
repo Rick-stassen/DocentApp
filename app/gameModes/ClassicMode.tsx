@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { getSession } from "../../backend/stotage.mjs";
 
 export default function HomeScreen() {
   const LESSON_SIZE = 10;
@@ -21,34 +22,70 @@ export default function HomeScreen() {
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
-  useEffect(() => {
-    fetch("http://localhost:3000/items")
-      .then(res => res.json())
-      .then(data => {
-        const limited = data.slice(0, LESSON_SIZE);
+  // useEffect(() => {
+  //   fetch("http://localhost:3000/items")
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       console.log(typeof(data));
+  //       const limited = data.slice(0, LESSON_SIZE);
 
-        setItems(limited);
-        setCurrentItem(limited[0]);
-        setItemIndex(0);
-        setAnswers(new Array(LESSON_SIZE).fill(null));
-      })
-      .catch(err => console.log(err));
-  }, []);
+  //       setItems(limited);
+  //       setCurrentItem(limited[0]);
+  //       setItemIndex(0);
+  //       setAnswers(new Array(LESSON_SIZE).fill(null));
+  //     })
+  //     .catch(err => console.log(err));
+  // }, []);
 
-  function RecieveAnswer(answer: string) {
+  useEffect(() => 
+  {
+    async function loadItems() 
+    {
+      const token = await getSession();
+
+      const res = await fetch("http://localhost:3000/items", 
+      {
+        method: "GET",
+        headers: 
+        {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+      const data = await res.json();
+
+      const limited = data.slice(0, LESSON_SIZE);
+
+      setItems(limited);
+      setCurrentItem(limited[0]);
+      setItemIndex(0);
+      setAnswers(new Array(LESSON_SIZE).fill(null));
+    }
+
+    loadItems().catch(err => console.log(err));
+  },[]);
+
+  async function RecieveAnswer(answer: string) 
+  {
     if (!currentItem) return;
 
-    const isCorrect =
-      currentItem.article.toLowerCase() === answer.toLowerCase();
+     const token = await getSession();
+
+    const isCorrect = currentItem.article.toLowerCase() === answer.toLowerCase();
 
     //SEND TO DATABASE
-    fetch("http://localhost:3000/learned_word", {
+    await fetch("http://localhost:3000/learned_word", 
+      {
       method: "POST",
-      headers: {
+      headers: 
+      {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        id  : currentItem.id,
+        token: token,
+        id: currentItem.id,
         word: currentItem.word,
         correct: isCorrect,
         litwoord: currentItem.article,

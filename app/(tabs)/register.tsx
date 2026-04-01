@@ -136,7 +136,7 @@ export default function RegisterScreen() {
       } else if (data.emailExists) {
         showErrorPopup("Email is already in use");
       } else {
-        animateOut(() => router.push("/(tabs)/login"));
+        animateOut(() => router.push("../login"));
       }
     } catch {
       showErrorPopup("An error occurred. Try again!");
@@ -144,7 +144,7 @@ export default function RegisterScreen() {
   };
 
   const goToLogin = () => {
-    animateOut(() => router.push("/(tabs)/login"));
+    animateOut(() => router.push("../login"));
   };
 
   function AnimatedButton({ title, onPress }: any) {

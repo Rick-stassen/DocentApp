@@ -134,14 +134,14 @@ export default function LoginScreen() {
       await storeSession(data.token);
       setUserToken(data.token);
 
-      animateOut(() => router.push("/(tabs)/intro"));
+      animateOut(() => router.push("../intro"));
     } catch {
       showErrorPopup("Server unreachable");
     }
   };
 
   const goToRegister = () => {
-    animateOut(() => router.push("/(tabs)/register"));
+    animateOut(() => router.push("../register"));
   };
 
   function AnimatedButton({ title, onPress }: any) {

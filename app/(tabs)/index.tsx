@@ -140,7 +140,7 @@ export default function HomeScreen() {
       } else {
         setCurrentItem(null);
         setTimeout(() => {
-          router.push('/(tabs)/intro');
+          router.push('../intro');
         }, 500);
       }
     }, 470);

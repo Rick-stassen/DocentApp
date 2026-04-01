@@ -18,6 +18,10 @@ export default function Profile() {
     litwoord: string;
   };
 
+  const totalCount = items.length;
+  const correctCount = items.filter(i => i.correct === 1).length;
+  const wrongCount = items.filter(i => i.correct === 0).length;
+
   useEffect(() => 
     {
       async function loadProfile() 
@@ -52,12 +56,9 @@ export default function Profile() {
         <Text style={styles.title}>Learned Words</Text>
 
         <ScrollView style={styles.list}>
-          {items.map((item, index) => (
-            <View key={index} style={styles.wordRow}>
-              <Text style={styles.article}>{item.litwoord}</Text>
-              <Text style={styles.word}>{item.word}</Text>
-            </View>
-          ))}
+          <Text style={styles.word}>Total: {totalCount}</Text>
+          <Text style={styles.word}>Correct: {correctCount}</Text>
+          <Text style={styles.word}>Wrong: {wrongCount}</Text>
         </ScrollView>
       </View>
     </LinearGradient>

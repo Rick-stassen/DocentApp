@@ -22,20 +22,6 @@ export default function HomeScreen() {
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
-  // useEffect(() => {
-  //   fetch("http://localhost:3000/items")
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       console.log(typeof(data));
-  //       const limited = data.slice(0, LESSON_SIZE);
-
-  //       setItems(limited);
-  //       setCurrentItem(limited[0]);
-  //       setItemIndex(0);
-  //       setAnswers(new Array(LESSON_SIZE).fill(null));
-  //     })
-  //     .catch(err => console.log(err));
-  // }, []);
 
   useEffect(() => 
   {

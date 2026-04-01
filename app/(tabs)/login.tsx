@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TextStyle,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -194,7 +195,7 @@ export default function LoginScreen() {
           ]}>
             <MailIcon />
             <TextInput
-              style={styles.textInputWithIcon}
+              style={styles.textInputWithIcon as TextStyle} 
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
@@ -212,7 +213,7 @@ export default function LoginScreen() {
           ]}>
             <LockIcon />
             <TextInput
-              style={styles.textInputWithIcon}
+              style={styles.textInputWithIcon as TextStyle}
               placeholder="Password"
               secureTextEntry
               value={password}
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
     borderColor: "#FD297B",
     borderWidth: 2,
   },
-
+  
   textInputWithIcon: {
     flex: 1,
     height: 50,

@@ -13,7 +13,6 @@ import {
 
 export default function HomeScreen() {
   const LESSON_SIZE = 10;
-  const BASE_URL = "http://localhost:3000"; // ✅ FIX
   const API_KEY = "mjVrreKbq2KmuCNe86cRvHiZDctdypjO6BWahX1fzQMLjwVCyNgrn1sD"; // 🔥 voeg je key toe
 
   const [items, setItems] = useState<any[]>([]);
@@ -73,7 +72,7 @@ export default function HomeScreen() {
 
   // 🔥 ITEMS LADEN
   useEffect(() => {
-    fetch(`${BASE_URL}/items`)
+    fetch("http://localhost:3000/items")
       .then(res => res.json())
       .then(data => {
         const limited = data.slice(0, LESSON_SIZE);
@@ -103,7 +102,7 @@ export default function HomeScreen() {
 
     // ✅ FIX: try/catch (geen crash meer)
     try {
-      await fetch(`${BASE_URL}/learned_word`, {
+      await fetch("http://localhost:3000/learned_word", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

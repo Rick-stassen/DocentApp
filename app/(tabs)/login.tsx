@@ -6,6 +6,7 @@ import { useContext, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -16,10 +17,13 @@ import Svg, { Path } from "react-native-svg";
 import { UserContext } from "../../backend/UserContext.mjs";
 import { storeSession } from "../../backend/stotage.mjs";
 
-// 🔹 Icons
+// 🔹 ICONS
 const MailIcon = () => (
-  <Svg width={24} height={24} viewBox="0 0 960 960" fill="none" style={{ marginRight: 5 }}>
-    <Path d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Zm320-280L160 360v400h640V360L480 520Zm0-80 320-200H160l320 200Z" fill="#55555575" />
+  <Svg width={24} height={24} viewBox="0 0 960 960" style={{ marginRight: 5 }}>
+    <Path
+      d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Zm320-280L160 360v400h640V360L480 520Zm0-80 320-200H160l320 200Z"
+      fill="#55555575"
+    />
   </Svg>
 );
 
@@ -36,10 +40,11 @@ export default function LoginScreen() {
   const router = useRouter();
   const { setUserToken } = useContext(UserContext);
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const screenHeight = Dimensions.get("window").height;
 
@@ -47,7 +52,7 @@ export default function LoginScreen() {
   const opacity = useRef(new Animated.Value(0)).current;
   const popupOpacity = useRef(new Animated.Value(0)).current;
 
-  // 🔥 zelfde animatie reset als register
+  // 🔥 ANIMATIE (zelfde als register)
   useFocusEffect(
     React.useCallback(() => {
       translateY.setValue(screenHeight);
@@ -128,9 +133,9 @@ export default function LoginScreen() {
 
       await storeSession(data.token);
       setUserToken(data.token);
+
       animateOut(() => router.push("/(tabs)/intro"));
-    } catch (err) {
-      console.log(err);
+    } catch {
       showErrorPopup("Server unreachable");
     }
   };
@@ -139,13 +144,7 @@ export default function LoginScreen() {
     animateOut(() => router.push("/(tabs)/register"));
   };
 
-  function AnimatedButton({
-    title,
-    onPress,
-  }: {
-    title: string;
-    onPress: () => void;
-  }) {
+  function AnimatedButton({ title, onPress }: any) {
     const scale = useRef(new Animated.Value(1)).current;
 
     return (
@@ -186,19 +185,31 @@ export default function LoginScreen() {
         )}
 
         <Animated.View style={[styles.card, { transform: [{ translateY }], opacity }]}>
-          <Text style={styles.titleregistreer}>Login</Text>
+          <Text style={styles.title}>Login</Text>
 
-          <View style={styles.inputContainer}>
+          {/* EMAIL */}
+          <View style={[
+            styles.inputContainer,
+            focusedInput === "email" && styles.inputContainerFocused
+          ]}>
             <MailIcon />
             <TextInput
               style={styles.textInputWithIcon}
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
+              onFocus={() => setFocusedInput("email")}
+              onBlur={() => setFocusedInput(null)}
+              underlineColorAndroid="transparent"
+              selectionColor="#FD297B"
             />
           </View>
 
-          <View style={styles.inputContainer}>
+          {/* PASSWORD */}
+          <View style={[
+            styles.inputContainer,
+            focusedInput === "password" && styles.inputContainerFocused
+          ]}>
             <LockIcon />
             <TextInput
               style={styles.textInputWithIcon}
@@ -206,6 +217,10 @@ export default function LoginScreen() {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+              onFocus={() => setFocusedInput("password")}
+              onBlur={() => setFocusedInput(null)}
+              underlineColorAndroid="transparent"
+              selectionColor="#FD297B"
             />
           </View>
 
@@ -213,10 +228,7 @@ export default function LoginScreen() {
 
           <TouchableOpacity style={styles.loginLink} onPress={goToRegister}>
             <Text style={styles.loginLinkText}>
-              No account?{" "}
-              <Text style={{ color: "#FD297B", fontWeight: "bold" }}>
-                Register!
-              </Text>
+              No account? <Text style={{ color: "#FD297B", fontWeight: "bold" }}>Register!</Text>
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -225,7 +237,7 @@ export default function LoginScreen() {
   );
 }
 
-// 🎨 IDENTIEKE STYLES ALS REGISTER
+// 🎨 EXACT SAME STYLES ALS REGISTER
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center" },
 
@@ -235,36 +247,23 @@ const styles = StyleSheet.create({
     height: "90%",
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 20,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 5,
   },
 
-card: {
-  position: "absolute",
-  width: "85%",
-  backgroundColor: "white",
-  borderRadius: 20,
-  padding: 20,
-
-  alignSelf: "center",
-
-  top: 0,
-  bottom: 0,
-  justifyContent: "center",
-
-  zIndex: 10,
-
-  shadowColor: "#000",
-  shadowOpacity: 0.25,
-  shadowRadius: 15,
-  elevation: 10,
-},
+  card: {
+    position: "absolute",
+    width: "85%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 10,
+  },
 
   gameTitle: {
+    top: 20,
     color: "#000",
     fontSize: 24,
     fontWeight: "bold",
@@ -272,7 +271,13 @@ card: {
     textAlign: "center",
   },
 
-  titleregistreer: { marginBottom: 20, fontSize: 24, fontWeight: "bold", textAlign: "center", color: "#FD297B" },
+  title: {
+    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#FD297B",
+  },
 
   inputContainer: {
     flexDirection: "row",
@@ -284,9 +289,22 @@ card: {
     paddingHorizontal: 10,
   },
 
+  inputContainerFocused: {
+    borderColor: "#FD297B",
+    borderWidth: 2,
+  },
+
   textInputWithIcon: {
     flex: 1,
     height: 50,
+    borderWidth: 0,
+    ...(Platform.OS === "ios" ||
+    Platform.OS === "android" ||
+    Platform.OS === "windows" ||
+    Platform.OS === "macos" ||
+    Platform.OS === "web") && {
+      outlineStyle: "none",
+    },
   },
 
   button: {

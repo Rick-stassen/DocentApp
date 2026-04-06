@@ -5,25 +5,33 @@ import * as React from "react";
 import { useRef, useState } from "react";
 import {
   Animated,
-  Dimensions, Platform, StyleSheet,
+  Dimensions,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TextStyle,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
-// 🔹 SVG Iconen
+/* ICONS */
 const MailIcon = () => (
   <Svg width={24} height={24} viewBox="0 0 960 960" style={{ marginRight: 5 }}>
-    <Path d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Zm320-280L160 360v400h640V360L480 520Zm0-80 320-200H160l320 200Z" fill="#55555575" />
+    <Path
+      d="M160 800q-33 0-56.5-23.5T80 720v-480q0-33 23.5-56.5T160 160h640q33 0 56.5 23.5T880 240v480q0 33-23.5 56.5T800 800H160Zm320-280L160 360v400h640V360L480 520Zm0-80 320-200H160l320 200Z"
+      fill="#55555575"
+    />
   </Svg>
 );
 
 const UserIcon = () => (
   <Svg width={24} height={24} viewBox="0 -960 960 960" style={{ marginRight: 5 }}>
-    <Path d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" fill="#55555575" />
+    <Path
+      d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z"
+      fill="#55555575"
+    />
   </Svg>
 );
 
@@ -42,6 +50,9 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [tags, setTags] = useState("0000");
+  const [usernameInput, setUsernameInput] = useState("");
+
   const [error, setError] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
@@ -52,10 +63,14 @@ export default function RegisterScreen() {
   const opacity = useRef(new Animated.Value(0)).current;
   const popupOpacity = useRef(new Animated.Value(0)).current;
 
+  // 🔥 SAME ENTER ANIMATION AS LOGIN
   useFocusEffect(
     React.useCallback(() => {
       translateY.setValue(screenHeight);
       opacity.setValue(0);
+      popupOpacity.setValue(0);
+      setShowPopup(false);
+      setError("");
 
       Animated.parallel([
         Animated.spring(translateY, {
@@ -73,6 +88,7 @@ export default function RegisterScreen() {
     }, [screenHeight])
   );
 
+  // 🔥 FIXED EXIT ANIMATION
   const animateOut = (onDone?: () => void) => {
     Animated.parallel([
       Animated.timing(translateY, {
@@ -82,10 +98,12 @@ export default function RegisterScreen() {
       }),
       Animated.timing(opacity, {
         toValue: 0,
-        duration: 300,
+        duration: 400,
         useNativeDriver: true,
       }),
-    ]).start(() => onDone && onDone());
+    ]).start(() => {
+      requestAnimationFrame(() => onDone?.());
+    });
   };
 
   const showErrorPopup = (message: string) => {
@@ -123,67 +141,47 @@ export default function RegisterScreen() {
       return;
     }
 
+    const finalTags = (tags || "0000").slice(0, 4).padEnd(4, "0");
+
     try {
       const response = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, username }),
+        body: JSON.stringify({
+          email,
+          password,
+          username,
+          tags: finalTags,
+        }),
       });
 
       const data = await response.json();
 
-      if (data.usernameExists) 
-        {
-        showErrorPopup("Username is already in use");
+      if (!response.ok) {
+        showErrorPopup(data.error || "Register failed");
+        return;
       }
-      else if (data.emailExists) 
-      {
-        showErrorPopup("Email is already in use");
-      }
-      else 
-      {
-        animateOut(() => router.push("../login"));
-      }
+
+      animateOut(() => {
+        setTimeout(() => router.push("../login"), 50);
+      });
+
     } catch {
-      showErrorPopup("An error occurred. Try again!");
+      showErrorPopup("Server unreachable");
     }
   };
 
   const goToLogin = () => {
-    animateOut(() => router.push("../login"));
+    animateOut(() => {
+      setTimeout(() => router.push("../login"), 50);
+    });
   };
-
-  function AnimatedButton({ title, onPress }: any) {
-    const scale = useRef(new Animated.Value(1)).current;
-
-    return (
-      <Animated.View style={{ transform: [{ scale }], marginTop: 10 }}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.button}
-          onPressIn={() =>
-            Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start()
-          }
-          onPressOut={() =>
-            Animated.spring(scale, {
-              toValue: 1,
-              friction: 3,
-              tension: 40,
-              useNativeDriver: true,
-            }).start()
-          }
-          onPress={onPress}
-        >
-          <Text style={styles.buttonText}>{title}</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
 
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient colors={["#FD297B", "rgb(221, 11, 204)"]} style={styles.container}>
-        <View style={styles.gameContainer} >
+
+        <View style={styles.gameContainer}>
           <Text style={styles.gameTitle}>Wordplay</Text>
         </View>
 
@@ -194,13 +192,10 @@ export default function RegisterScreen() {
         )}
 
         <Animated.View style={[styles.card, { transform: [{ translateY }], opacity }]}>
-          <Text style={styles.titleregistreer}>Register</Text>
+          <Text style={styles.title}>Register</Text>
 
           {/* EMAIL */}
-          <View style={[
-            styles.inputContainer,
-            focusedInput === "email" && styles.inputContainerFocused
-          ]}>
+          <View style={[styles.inputContainer, focusedInput === "email" && styles.inputContainerFocused]}>
             <MailIcon />
             <TextInput
               style={styles.textInputWithIcon as TextStyle}
@@ -209,34 +204,41 @@ export default function RegisterScreen() {
               onChangeText={setEmail}
               onFocus={() => setFocusedInput("email")}
               onBlur={() => setFocusedInput(null)}
-              underlineColorAndroid="transparent"
               selectionColor="#FD297B"
             />
           </View>
 
           {/* USERNAME */}
-          <View style={[
-            styles.inputContainer,
-            focusedInput === "username" && styles.inputContainerFocused
-          ]}>
+          <View style={[styles.inputContainer, focusedInput === "username" && styles.inputContainerFocused]}>
             <UserIcon />
             <TextInput
               style={styles.textInputWithIcon as TextStyle}
-              placeholder="Username"
-              value={username}
-              onChangeText={setUsername}
+              placeholder="Username#0000"
+              value={usernameInput}
+              onChangeText={(text) => {
+                const parts = text.split("#");
+
+                const newUsername = parts[0] ?? "";
+                const newTagsRaw = parts[1] ?? "";
+
+                const cleanedTags = newTagsRaw.replace(/[^0-9a-zA-Z]/g, "").slice(0, 4);
+                const finalTags = cleanedTags.length > 0 ? cleanedTags : "0000";
+
+                const safeValue =
+                  newUsername + (text.includes("#") ? "#" : "") + cleanedTags;
+
+                setUsernameInput(safeValue);
+                setUsername(newUsername);
+                setTags(finalTags);
+              }}
               onFocus={() => setFocusedInput("username")}
               onBlur={() => setFocusedInput(null)}
-              underlineColorAndroid="transparent"
               selectionColor="#FD297B"
             />
           </View>
 
           {/* PASSWORD */}
-          <View style={[
-            styles.inputContainer,
-            focusedInput === "password" && styles.inputContainerFocused
-          ]}>
+          <View style={[styles.inputContainer, focusedInput === "password" && styles.inputContainerFocused]}>
             <LockIcon />
             <TextInput
               style={styles.textInputWithIcon as TextStyle}
@@ -246,19 +248,21 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
               onFocus={() => setFocusedInput("password")}
               onBlur={() => setFocusedInput(null)}
-              underlineColorAndroid="transparent"
               selectionColor="#FD297B"
             />
           </View>
 
-          <AnimatedButton title="Register" onPress={handleRegister} />
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginLink} onPress={goToLogin}>
+          <TouchableOpacity onPress={goToLogin} style={styles.loginLink}>
             <Text style={styles.loginLinkText}>
               Already have an account?{" "}
               <Text style={{ color: "#FD297B", fontWeight: "bold" }}>Login!</Text>
             </Text>
           </TouchableOpacity>
+
         </Animated.View>
       </LinearGradient>
     </View>
@@ -276,6 +280,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
+  gameTitle: {
+    top: 20,
+    color: "#000",
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
   card: {
     position: "absolute",
     width: "85%",
@@ -289,12 +301,12 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
 
-  titleregistreer: {
-    marginBottom: 20,
+  title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
     color: "#FD297B",
+    marginBottom: 20,
   },
 
   inputContainer: {
@@ -316,7 +328,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     borderWidth: 0,
-    ...(Platform.OS === "ios" || Platform.OS === "android" || Platform.OS === "windows" || Platform.OS === "macos" || Platform.OS === "web") && { outlineStyle: "none" },
+    ...(Platform.OS === "ios" ||
+    Platform.OS === "android" ||
+    Platform.OS === "web") && {
+      outlineStyle: "none",
+    },
   },
 
   button: {
@@ -338,15 +354,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-   gameTitle: {
-    top: 20,
-    color: "#000",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+  loginLink: {
+    marginTop: 15,
+    alignItems: "center",
   },
 
-  loginLink: { marginTop: 15, alignItems: "center" },
-  loginLinkText: { color: "#555" },
+  loginLinkText: {
+    color: "#555",
+    textAlign: "center",
+  },
 });

@@ -22,68 +22,71 @@ export default function HomeScreen() {
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
+  const [noWords, setNoWords] = useState(false); // 🔥 NIEUW
 
-  useEffect(() => 
-  {
-    async function loadItems() 
-    {
+  useEffect(() => {
+    async function loadItems() {
       const token = await getSession();
 
-      const res = await fetch("http://localhost:3000/items", 
-      {
+      const res = await fetch("http://localhost:3000/practice", {
         method: "GET",
-        headers: 
-        {
+        headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      });
 
       const data = await res.json();
+
+      // 🔥 CHECK ALS GEEN WOORDEN
+      if (!data || data.length === 0) {
+        setNoWords(true);
+        setItems([]);
+        setCurrentItem(null);
+        return;
+      }
 
       const limited = data.slice(0, LESSON_SIZE);
 
       setItems(limited);
       setCurrentItem(limited[0]);
       setItemIndex(0);
-      setAnswers(new Array(LESSON_SIZE).fill(null));
+      setAnswers(new Array(limited.length).fill(null));
     }
 
     loadItems().catch(err => console.log(err));
-  },[]);
+  }, []);
 
-  async function RecieveAnswer(answer: string) 
-  {
+  async function RecieveAnswer(answer: string) {
     if (!currentItem) return;
 
-     const token = await getSession();
+    const token = await getSession();
 
-    const isCorrect = currentItem.article.toLowerCase() === answer.toLowerCase();
+    const isCorrect =
+      currentItem.article.toLowerCase() === answer.toLowerCase();
 
-    //SEND TO DATABASE
-    await fetch("http://localhost:3000/learned_word", 
-      {
+    // SEND TO DATABASE
+    await fetch("http://localhost:3000/practice", {
       method: "POST",
-      headers: 
-      {
+      headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        token: token,
+        user_sesion_id: token, // 🔥 FIX
         id: currentItem.id,
         word: currentItem.word,
-        correct: isCorrect,
+        correct: isCorrect ? 1 : 0, // 🔥 belangrijk
         litwoord: currentItem.article,
       }),
     }).catch(err => console.log(err));
+
     // store result locally
     setAnswers(prev => {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
-    
+
     // feedback UI
     if (isCorrect) {
       setIsVisibleTrue(true);
@@ -97,11 +100,12 @@ export default function HomeScreen() {
     setTimeout(() => {
       const nextIndex = itemIndex + 1;
 
-      if (nextIndex < items.length && nextIndex < LESSON_SIZE) {
+      if (nextIndex < items.length) {
         setItemIndex(nextIndex);
         setCurrentItem(items[nextIndex]);
       } else {
         setCurrentItem(null);
+
         setTimeout(() => {
           router.push('../intro');
         }, 500);
@@ -151,45 +155,58 @@ export default function HomeScreen() {
 
       <View style={styles.cardContainer}>
 
-        <Text style={styles.topRightText}>
-          {itemIndex + 1} / {LESSON_SIZE}
-        </Text>
-
-        <View style={styles.progressContainer}>
-          {answers.map((ans, index) => (
-            <View
-              key={index}
-              style={[
-                styles.segment,
-                ans === true && styles.correctSegment,
-                ans === false && styles.wrongSegment,
-              ]}
-            />
-          ))}
-        </View>
-
-        {currentItem && (
-          <View style={styles.wordCard}>
-            <Text style={styles.wordText}>{currentItem.word}</Text>
+        {/* 🔥 NO WORDS MESSAGE */}
+        {noWords && (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+              No words to learn 🎉
+            </Text>
           </View>
         )}
 
-        {isVisibleTrue && (
-          <View style={styles.correctBox}>
-            <Text style={styles.icon}>✔</Text>
-          </View>
-        )}
+        {!noWords && (
+          <>
+            <Text style={styles.topRightText}>
+              {itemIndex + 1} / {items.length}
+            </Text>
 
-        {isVisibleFalse && (
-          <View style={styles.wrongBox}>
-            <Text style={styles.icon}>✖</Text>
-          </View>
-        )}
+            <View style={styles.progressContainer}>
+              {answers.map((ans, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.segment,
+                    ans === true && styles.correctSegment,
+                    ans === false && styles.wrongSegment,
+                  ]}
+                />
+              ))}
+            </View>
 
-        <View style={styles.buttonsContainer}>
-          <AnimatedButton title="DE" />
-          <AnimatedButton title="HET" />
-        </View>
+            {currentItem && (
+              <View style={styles.wordCard}>
+                <Text style={styles.wordText}>{currentItem.word}</Text>
+              </View>
+            )}
+
+            {isVisibleTrue && (
+              <View style={styles.correctBox}>
+                <Text style={styles.icon}>✔</Text>
+              </View>
+            )}
+
+            {isVisibleFalse && (
+              <View style={styles.wrongBox}>
+                <Text style={styles.icon}>✖</Text>
+              </View>
+            )}
+
+            <View style={styles.buttonsContainer}>
+              <AnimatedButton title="DE" />
+              <AnimatedButton title="HET" />
+            </View>
+          </>
+        )}
 
       </View>
     </LinearGradient>

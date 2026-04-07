@@ -10,7 +10,6 @@ import { Push_learned_words } from "./routes/push_learned_words.mjs";
 import { register_user } from "./routes/register.mjs";
 
 
-
 const app = express();
 app.use(cors());
 app.use(express.json())
@@ -78,6 +77,18 @@ app.post("/login", async (_req, res) => {
     return res.status(500).json({ error: "DB error" });
   }
 });
+
+// app.get("/practice", async (_req, res) => 
+// {
+//   try 
+//   {
+//     res.json(await get_wronge_words(_req, res, db));
+//   }
+//   catch(err)
+//   {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 app.get("/practice", async (_req, res) => 
 {

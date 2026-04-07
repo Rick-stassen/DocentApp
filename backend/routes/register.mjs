@@ -5,18 +5,17 @@ export async function register_user(_req, res, db) {
         "SELECT id FROM users WHERE email = ?",
         [email]
     );
+    const[TagsRows] = await db.execute(
+        "SELECT id FROM tags WHERE name = ?",
+        [tags]
+    );
 
     if (emailRows.length > 0) {
         return res.status(400).json({ error: "Email already exists" });
     }
 
-    const [usernameRows] = await db.execute(
-        "SELECT id FROM users WHERE username = ?",
-        [username]
-    );
-
-    if (usernameRows.length > 0) {
-        return res.status(400).json({ error: "Username already exists" });
+    if (TagsRows.length > 0) {
+        return res.status(400).json({ error: "Tag already exists" });
     }
 
     await db.execute(

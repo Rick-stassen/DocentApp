@@ -6,6 +6,8 @@ export async function Get_item_words(_req, res, db)
 
     const token = _req.headers.authorization?.split(" ")[1];
 
+    console.log(token);
+
     const [rows] = await db.execute(`
         SELECT cw.id, cw.word, a.article
         FROM curatedword cw

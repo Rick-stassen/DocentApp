@@ -21,6 +21,7 @@ export default function HomeScreen() {
 
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
+  const [wrongItems, setWrongItems] = useState<any[]>([]);
 
 
   useEffect(() => 
@@ -85,28 +86,37 @@ export default function HomeScreen() {
     });
     
     // feedback UI
-    if (isCorrect) {
-      setIsVisibleTrue(true);
-      setTimeout(() => setIsVisibleTrue(false), 500);
-    } else {
-      setIsVisibleFalse(true);
-      setTimeout(() => setIsVisibleFalse(false), 500);
+    if (!isCorrect) 
+    {
+      setWrongItems(prev => [...prev, currentItem]);
     }
 
     // next item
     setTimeout(() => {
-      const nextIndex = itemIndex + 1;
+  const nextIndex = itemIndex + 1;
 
-      if (nextIndex < items.length && nextIndex < LESSON_SIZE) {
-        setItemIndex(nextIndex);
-        setCurrentItem(items[nextIndex]);
-      } else {
-        setCurrentItem(null);
-        setTimeout(() => {
-          router.push('../intro');
-        }, 500);
-      }
-    }, 470);
+  if (nextIndex < items.length) {
+    setItemIndex(nextIndex);
+    setCurrentItem(items[nextIndex]);
+  } 
+  else if (wrongItems.length > 0) {
+    // start ronde met fouten
+    setItems(wrongItems);
+    setWrongItems([]);
+    setItemIndex(0);
+    setCurrentItem(wrongItems[0]);
+
+    // reset progress
+    setAnswers(new Array(wrongItems.length).fill(null));
+  } 
+  else 
+  {
+    setCurrentItem(null);
+    setTimeout(() => {
+      router.push('../intro');
+    }, 500);
+    }
+  }, 470);
   }
 
   function AnimatedButton({ title }: { title: string }) {

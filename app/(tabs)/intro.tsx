@@ -25,9 +25,9 @@ export default function HomeScreen() {
 
   const gameModes = [
     { name: "Classic Mode", screen: "/gameModes/ClassicMode" },
-    { name: "Time Attack", screen: "/time-attack" },
-    { name: "Multiplayer", screen: "/Multiplayer" },
-    { name: "Practice", screen: "/Practice" },
+    { name: "Time Attack", screen: "/gameModes/TimeAttack" },
+    { name: "Multiplayer", screen: "/gameModes/Multiplayer" },
+    { name: "Practice", screen: "/gameModes/Practice" },
   ];
 
   useEffect(() => {

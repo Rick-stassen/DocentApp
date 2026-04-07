@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
-  const [noWords, setNoWords] = useState(false); // 🔥 NIEUW
+  const [noWords, setNoWords] = useState(false); 
 
   useEffect(() => {
     async function loadItems() {
@@ -37,7 +37,6 @@ export default function HomeScreen() {
 
       const data = await res.json();
 
-      // 🔥 CHECK ALS GEEN WOORDEN
       if (!data || data.length === 0) {
         setNoWords(true);
         setItems([]);
@@ -72,10 +71,10 @@ export default function HomeScreen() {
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        user_sesion_id: token, // 🔥 FIX
+        user_sesion_id: token, 
         id: currentItem.id,
         word: currentItem.word,
-        correct: isCorrect ? 1 : 0, // 🔥 belangrijk
+        correct: isCorrect ? 1 : 0,
         litwoord: currentItem.article,
       }),
     }).catch(err => console.log(err));
@@ -155,7 +154,7 @@ export default function HomeScreen() {
 
       <View style={styles.cardContainer}>
 
-        {/* 🔥 NO WORDS MESSAGE */}
+        {/* NO WORDS MESSAGE */}
         {noWords && (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>

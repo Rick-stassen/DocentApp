@@ -3,11 +3,10 @@ export async function get_wronge_words(req, res, db) {
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return [];
+      // return [];
+      console.log("No token provided");
+      return res.status(401).json({ error: "Unauthorized" });
     }
-
-    // TIJDELIJK (zoals jij nu werkt):
-    const userId = req.headers.authorization; // of haal uit body/token
 
     const [rows] = await db.query(`
       SELECT lw.*
@@ -21,7 +20,7 @@ export async function get_wronge_words(req, res, db) {
       ON lw.id = latest.max_id
       WHERE lw.correct = 0
       AND lw.user_sesion_id = ?
-    `, [userId, userId]);
+    `, [token, token]);
 
     return rows;
 

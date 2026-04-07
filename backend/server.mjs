@@ -10,6 +10,7 @@ import { Push_learned_words } from "./routes/push_learned_words.mjs";
 import { register_user } from "./routes/register.mjs";
 
 
+
 const app = express();
 app.use(cors());
 app.use(express.json())

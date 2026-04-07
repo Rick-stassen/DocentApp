@@ -1,12 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { router } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { getSession } from "../../backend/stotage.mjs";
 
@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
 
-  const [noWords, setNoWords] = useState(false); 
+  const [noWords, setNoWords] = useState(false);
 
   useEffect(() => {
     async function loadItems() {
@@ -39,8 +39,6 @@ export default function HomeScreen() {
 
       if (!data || data.length === 0) {
         setNoWords(true);
-        setItems([]);
-        setCurrentItem(null);
         return;
       }
 
@@ -52,8 +50,11 @@ export default function HomeScreen() {
       setAnswers(new Array(limited.length).fill(null));
     }
 
-    loadItems().catch(err => console.log(err));
+    loadItems().catch(console.log);
   }, []);
+
+  const normalize = (v: any) =>
+    (v ?? "").toString().trim().toLowerCase();
 
   async function RecieveAnswer(answer: string) {
     if (!currentItem) return;
@@ -61,32 +62,28 @@ export default function HomeScreen() {
     const token = await getSession();
 
     const isCorrect =
-      currentItem.article.toLowerCase() === answer.toLowerCase();
+      normalize(currentItem.litwoord) === normalize(answer);
 
-    // SEND TO DATABASE
     await fetch("http://localhost:3000/practice", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        user_sesion_id: token, 
-        id: currentItem.id,
+        user_sesion_id: token,
         word: currentItem.word,
         correct: isCorrect ? 1 : 0,
-        litwoord: currentItem.article,
+        litwoord: currentItem.litwoord,
       }),
-    }).catch(err => console.log(err));
+    });
 
-    // store result locally
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
 
-    // feedback UI
     if (isCorrect) {
       setIsVisibleTrue(true);
       setTimeout(() => setIsVisibleTrue(false), 500);
@@ -95,7 +92,6 @@ export default function HomeScreen() {
       setTimeout(() => setIsVisibleFalse(false), 500);
     }
 
-    // next item
     setTimeout(() => {
       const nextIndex = itemIndex + 1;
 
@@ -106,7 +102,7 @@ export default function HomeScreen() {
         setCurrentItem(null);
 
         setTimeout(() => {
-          router.push('../intro');
+          router.push("../intro");
         }, 500);
       }
     }, 470);
@@ -132,7 +128,9 @@ export default function HomeScreen() {
     };
 
     return (
-      <Animated.View style={{ transform: [{ scale }], flex: 1, marginHorizontal: 5 }}>
+      <Animated.View
+        style={{ transform: [{ scale }], flex: 1, marginHorizontal: 5 }}
+      >
         <TouchableOpacity
           style={styles.button}
           onPressIn={pressIn}
@@ -153,8 +151,6 @@ export default function HomeScreen() {
       <Text style={styles.header}>Wordplay</Text>
 
       <View style={styles.cardContainer}>
-
-        {/* NO WORDS MESSAGE */}
         {noWords && (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>
@@ -206,7 +202,6 @@ export default function HomeScreen() {
             </View>
           </>
         )}
-
       </View>
     </LinearGradient>
   );

@@ -64,7 +64,7 @@ export default function HomeScreen() {
     const isCorrect =
       normalize(currentItem.litwoord) === normalize(answer);
 
-    await fetch("http://localhost:3000/practice", {
+    await fetch("http://localhost:3000/practiceCorrect", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

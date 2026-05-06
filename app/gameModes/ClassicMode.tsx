@@ -1,18 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Animated,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ActivityIndicator, Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getSession } from "../../backend/stotage.mjs";
 
-export default function HomeScreen() {
+export default function HomeScreen() 
+{
   const LESSON_SIZE = 10;
   const API_KEY = "mjVrreKbq2KmuCNe86cRvHiZDctdypjO6BWahX1fzQMLjwVCyNgrn1sD";
 
@@ -22,6 +15,7 @@ export default function HomeScreen() {
 
   const [answers, setAnswers] = useState<(boolean | null)[]>([]);
   const [wrongItems, setWrongItems] = useState<any[]>([]);
+  const [isRetryRound, setIsRetryRound] = useState(false);
 
   const [isVisibleFalse, setIsVisibleFalse] = useState(false);
   const [isVisibleTrue, setIsVisibleTrue] = useState(false);
@@ -29,9 +23,13 @@ export default function HomeScreen() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(false);
 
+  const [showResultBox, setShowResultBox] = useState(false);
+  const [wrongCount, setWrongCount] = useState(0);
 
-  const translateWord = (word: string) => {
-    const map: any = {
+  const translateWord = (word: string) => 
+  {
+    const map: any = 
+    {
       appel: "apple",
       hond: "dog",
       huis: "house",
@@ -41,46 +39,49 @@ export default function HomeScreen() {
     return map[word.toLowerCase()] || word;
   };
 
-  const fetchImage = async (word: string) => {
-    try {
+  const fetchImage = async (word: string) => 
+  {
+    try 
+    {
       setLoadingImage(true);
-
       const translated = translateWord(word);
-
-      const res = await fetch(
+      const res = await fetch
+      (
         `https://api.pexels.com/v1/search?query=${translated}&per_page=1`,
         {
-          headers: {
-            Authorization: API_KEY,
-          },
+          headers: { Authorization: API_KEY }
         }
       );
-
       const data = await res.json();
-
-      if (data.photos?.length > 0) {
+      if (data.photos?.length > 0) 
+      {
         setImageUrl(data.photos[0].src.medium);
-      } else {
+      } 
+      else 
+      {
         setImageUrl(null);
       }
-
-    } catch (err) {
+    } 
+    catch (err) 
+    {
       console.log("Image error:", err);
-    } finally {
+    }
+    finally 
+    {
       setLoadingImage(false);
     }
   };
 
-  useEffect(() => {
-    async function loadItems() {
+  useEffect(() => 
+  {
+    async function loadItems() 
+    {
       const token = await getSession();
-
-      const res = await fetch("http://localhost:3000/items", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const res = await fetch
+      (
+        "http://localhost:3000/items", 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const data = await res.json();
       const limited = data.slice(0, LESSON_SIZE);
 
@@ -88,6 +89,9 @@ export default function HomeScreen() {
       setCurrentItem(limited[0]);
       setItemIndex(0);
       setAnswers(new Array(LESSON_SIZE).fill(null));
+      setIsRetryRound(false);
+      setWrongCount(0);
+      setShowResultBox(false);
 
       fetchImage(limited[0].word);
     }
@@ -95,74 +99,116 @@ export default function HomeScreen() {
     loadItems().catch(console.log);
   }, []);
 
-  useEffect(() => {
-    if (currentItem) {
+  useEffect(() => 
+  {
+    if (currentItem) 
+    {
       fetchImage(currentItem.word);
     }
   }, [currentItem]);
 
-  async function RecieveAnswer(answer: string) {
+  async function RecieveAnswer(answer: string) 
+  {
     if (!currentItem) return;
 
     const token = await getSession();
-    const isCorrect =
-      currentItem.article.toLowerCase() === answer.toLowerCase();
+    const isCorrect = currentItem.article.toLowerCase() === answer.toLowerCase();
+    const updatedWrongItems = !isCorrect ? [...wrongItems, currentItem] : wrongItems;
 
-    await fetch("http://localhost:3000/learned_word", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        id: currentItem.id,
-        word: currentItem.word,
-        correct: isCorrect,
-        litwoord: currentItem.article,
-      }),
-    }).catch(console.log);
+    try 
+    {
+      const res = await fetch
+      (
+        "http://localhost:3000/learned_word", 
+        {
+          method: "POST",
+          headers: 
+          {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify
+          (
+            {
+              id: currentItem.id,
+              word: currentItem.word,
+              correct: isCorrect,
+              litwoord: currentItem.article,
+            }
+          ),
+        }
+      );
+      const data = await res.json();
+      console.log("RESPONSE", data);
+    } 
+    catch (err) 
+    {
+      console.log("FETCH ERROR", err);
+    }
 
-    setAnswers(prev => {
+    setAnswers(prev => 
+    {
       const updated = [...prev];
       updated[itemIndex] = isCorrect;
       return updated;
     });
 
-    if (isCorrect) {
+    if (isCorrect) 
+    {
       setIsVisibleTrue(true);
       setTimeout(() => setIsVisibleTrue(false), 500);
-    } else {
+    } 
+    else 
+    {
       setIsVisibleFalse(true);
       setTimeout(() => setIsVisibleFalse(false), 500);
-      setWrongItems(prev => [...prev, currentItem]); 
+      setWrongItems(updatedWrongItems);
+
+      // Only increment wrongCount in the first round
+      if (!isRetryRound) 
+      {
+        setWrongCount(prev => prev + 1);
+      }
     }
 
-    setTimeout(() => {
+    setTimeout(() => 
+    {
       const nextIndex = itemIndex + 1;
 
-      if (nextIndex < LESSON_SIZE) {
+      if (nextIndex < items.length) 
+      {
         setItemIndex(nextIndex);
         setCurrentItem(items[nextIndex]);
-      } else {
+      } 
+      else if (!isRetryRound && updatedWrongItems.length > 0) 
+      {
+        const retryItems = [...updatedWrongItems];
+        setItems(retryItems);
+        setWrongItems([]);
+        setItemIndex(0);
+        setCurrentItem(retryItems[0]);
+        setAnswers(new Array(retryItems.length).fill(null));
+        setIsRetryRound(true);
+      } 
+      else 
+      {
         setCurrentItem(null);
-        setTimeout(() => router.push('../intro'), 500);
+        setTimeout(() => setShowResultBox(true), 500);
+        setTimeout(() => router.push('../intro'), 2000);
       }
     }, 470);
   }
 
-  function AnimatedButton({ title }: { title: string }) {
+  function AnimatedButton({ title }: { title: string }) 
+  {
     const scale = useRef(new Animated.Value(1)).current;
 
-    return (
+    return(
       <Animated.View style={{ transform: [{ scale }], flex: 1, marginHorizontal: 5 }}>
         <TouchableOpacity
           style={styles.button}
-          onPressIn={() =>
-            Animated.spring(scale, { toValue: 0.85, useNativeDriver: true }).start()
-          }
-          onPressOut={() =>
-            Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()
-          }
+          onPressIn={() => Animated.spring(scale, { toValue: 0.85, useNativeDriver: true }).start()}
+          onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()}
           onPress={() => RecieveAnswer(title)}
         >
           <Text style={styles.buttonText}>{title}</Text>
@@ -171,14 +217,12 @@ export default function HomeScreen() {
     );
   }
 
-  return (
+  return(
     <LinearGradient colors={["#FD297B", "rgb(221, 11, 204)"]} style={styles.container}>
       <Text style={styles.header}>Wordplay</Text>
 
       <View style={styles.cardContainer}>
-        <Text style={styles.topRightText}>
-          {itemIndex + 1} / {LESSON_SIZE}
-        </Text>
+        <Text style={styles.topRightText}>{itemIndex + 1} / {LESSON_SIZE}</Text>
 
         <View style={styles.progressContainer}>
           {answers.map((ans, index) => (
@@ -195,7 +239,6 @@ export default function HomeScreen() {
 
         {currentItem && (
           <View style={styles.wordCard}>
-
             {loadingImage ? (
               <ActivityIndicator size="large" />
             ) : imageUrl ? (
@@ -220,6 +263,27 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {showResultBox && (
+          <View style={{
+            position: "absolute",
+            top: "40%",
+            left: "10%",
+            right: "10%",
+            backgroundColor: "white",
+            padding: 20,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
+          }}>
+            <Text style={{ fontSize: 24, fontWeight: "bold" }}>You got {wrongCount} wrong!</Text>
+          </View>
+        )}
+
         <View style={styles.buttonsContainer}>
           <AnimatedButton title="DE" />
           <AnimatedButton title="HET" />
@@ -229,37 +293,127 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", paddingTop: 60 },
-  header: { color: "white", fontSize: 26, fontWeight: "bold", marginBottom: 10 },
+const styles = StyleSheet.create
+(
+  {
+    container: 
+    { 
+      flex: 1, 
+      alignItems: "center", 
+      paddingTop: 60 
+    },
 
-  cardContainer: {
-    width: "85%",
-    height: "80%",
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+    header: 
+    { 
+      color: "white", 
+      fontSize: 26, 
+      fontWeight: "bold", 
+      marginBottom: 10 
+    },
 
-  topRightText: { position: "absolute", top: 15, right: 20 },
+    cardContainer: 
+    {
+      width: "85%",
+      height: "80%",
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 20,
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
 
-  progressContainer: { flexDirection: "row", width: "100%", height: 10, marginTop: 30 },
-  segment: { flex: 1, marginHorizontal: 2, backgroundColor: "#dfdfdf", borderRadius: 5 },
-  correctSegment: { backgroundColor: "#29fd3e" },
-  wrongSegment: { backgroundColor: "red" },
+    topRightText: 
+    { 
+      position: "absolute", 
+      top: 15, right: 20 
+    },
 
-  wordCard: { flex: 1, justifyContent: "center", alignItems: "center" },
-  wordText: { fontSize: 28, fontWeight: "bold" },
+    progressContainer: 
+    { 
+      flexDirection: "row", 
+      width: "100%", 
+      height: 10, 
+      marginTop: 30 
+    },
 
-  image: { width: 200, height: 200, borderRadius: 12, marginBottom: 20 },
+    segment: 
+    { 
+      flex: 1, 
+      marginHorizontal: 2, 
+      backgroundColor: "#dfdfdf", 
+      borderRadius: 5 
+    },
 
-  buttonsContainer: { flexDirection: "row", width: "100%" },
-  button: { backgroundColor: "#FD297B", padding: 18, borderRadius: 12 },
-  buttonText: { color: "white", fontSize: 18 },
+    correctSegment: 
+    { 
+      backgroundColor: "#29fd3e" 
+    },
 
-  correctBox: { position: "absolute", top: "40%", backgroundColor: "green", padding: 20 },
-  wrongBox: { position: "absolute", top: "40%", backgroundColor: "red", padding: 20 },
-  icon: { color: "white", fontSize: 30 },
-});
+    wrongSegment: 
+    { 
+      backgroundColor: "red" 
+    },
+
+    wordCard: 
+    { 
+      flex: 1, 
+      justifyContent: "center", 
+      alignItems: "center" 
+    },
+
+    wordText: 
+    { 
+      fontSize: 28, 
+      fontWeight: "bold" 
+    },
+
+    image: 
+    { 
+      width: 200, 
+      height: 200, 
+      borderRadius: 12, 
+      marginBottom: 20 
+    },
+
+    buttonsContainer: 
+    { 
+      flexDirection: "row", 
+      width: "100%" 
+    },
+
+    button: 
+    { 
+      backgroundColor: "#FD297B", 
+      padding: 18, borderRadius: 12 
+    },
+
+    buttonText: 
+    { 
+      color: "white", 
+      fontSize: 18 
+    },
+
+    correctBox: 
+    { 
+      position: "absolute", 
+      top: "40%", 
+      backgroundColor: "green", 
+      padding: 20 
+    },
+
+    wrongBox: 
+    { 
+      position: "absolute", 
+      top: "40%", 
+      backgroundColor: "red", 
+      padding: 20 
+    },
+
+    icon: 
+    { 
+      color: "white", 
+      fontSize: 30 
+    },
+
+  }
+);

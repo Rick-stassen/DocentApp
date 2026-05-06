@@ -1,3 +1,6 @@
+import express from "express";
+const app = express();
+app.use(express.json());
 export async function get_wronge_words(req, res, db) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -21,6 +24,27 @@ export async function get_wronge_words(req, res, db) {
     return res.json(rows);
 
   } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+export async function Push_correct_retry_words(req, res, db) 
+{
+  try{
+    const token = req.headers.authorization?.split(" ")[1];
+
+    console.log("TOKEN:", token);
+
+    await db.execute(
+      `UPDATE learned_word
+       SET correct = 1
+       WHERE user_sesion_id = ?
+       AND word IN (SELECT word FROM learned_word WHERE user_sesion_id = ? AND correct = 0)`,
+      [token, token]
+    );
+  }
+  catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Server error" });
   }

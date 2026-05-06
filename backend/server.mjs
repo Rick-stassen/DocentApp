@@ -5,7 +5,7 @@ import mysql from "mysql2/promise";
 import { Get_profile_info } from "./routes/get_profile_info.mjs";
 import { Get_item_words } from "./routes/get_words.mjs";
 import { login_user } from "./routes/login.mjs";
-import { get_wronge_words } from "./routes/practice.mjs";
+import { get_wronge_words, Push_correct_retry_words } from "./routes/practice.mjs";
 import { Push_learned_words } from "./routes/push_learned_words.mjs";
 import { register_user } from "./routes/register.mjs";
 
@@ -78,18 +78,6 @@ app.post("/login", async (_req, res) => {
   }
 });
 
-// app.get("/practice", async (_req, res) => 
-// {
-//   try 
-//   {
-//     res.json(await get_wronge_words(_req, res, db));
-//   }
-//   catch(err)
-//   {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
 app.get("/practice", async (_req, res) => 
 {
   try 
@@ -99,6 +87,18 @@ app.get("/practice", async (_req, res) =>
   catch(err)
   {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/practiceCorrect", async (_req, res) => {
+  try 
+  {
+    await Push_correct_retry_words(_req, res, db);
+  } 
+  catch (err) 
+  {
+    console.log(err);
+    return res.status(500).json({ error: "DB error" });
   }
 });
 
